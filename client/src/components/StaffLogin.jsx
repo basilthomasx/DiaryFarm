@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { User, Eye, EyeOff, Lock, Store, Leaf, BarChart } from 'lucide-react';
 
-const AdminLogin = () => {
+const StaffLogin = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -147,4 +147,4 @@ const AdminLogin = () => {
   );
 };
 
-export default AdminLogin;
+export default StaffLogin;

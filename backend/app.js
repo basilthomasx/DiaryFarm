@@ -11,7 +11,7 @@ const pool = new Pool({
     database: 'diary_farm', // Your PostgreSQL database name
     port: 5432,              // Default PostgreSQL port
 });
-
+db.connect();
 const app = express();
 app.use(express.json());
 const port = 3000;
@@ -69,8 +69,70 @@ async function seedUsers() {
   
     res.json({ token });
   });
+
+  async function seedUsers() {
+    const users = [
+      { username: 'user1', password: 'password1' },
+      { username: 'user2', password: 'password2' },
+      { username: 'user3', password: 'password3' },
+      { username: 'user4', password: 'password4' },
+    ];
+  
+    for (const user of users) {
+      const hashedPassword = await bcrypt.hash(user.password, 10);
+      await pool.query(
+        'INSERT INTO vcm (username, password_hash) VALUES ($1, $2) ON CONFLICT (username) DO NOTHING',
+        [user.username, hashedPassword]
+      );
+    }
+  }
+  
+  /////////////////// staff login
+  
+  // Seed users if the table is empty
+  async function initializeDatabase() {
+    const result = await pool.query('SELECT COUNT(*) FROM vcm');
+    const count = parseInt(result.rows[0].count, 10);
+  
+    if (count === 0) {
+      await seedUsers();
+    }
+  }
+  
+  initializeDatabase();
+  
+  // Login route
+  app.post("/api/vcm-login", async (req, res) => {
+    const { username, password } = req.body;
+    try {
+      const user = await pool.query(`SELECT * FROM vcm WHERE username = $1`, [
+        username,
+      ]);
+      if (user.rows.length === 0) {
+        return res.status(401).json({ message: "Invalid username or password" });
+      }
+  
+      const validPassword = await bcrypt.compare(
+        password,
+        user.rows[0].password_hash
+      );
+      if (!validPassword) {
+        return res.status(401).json({ message: "Invalid username or password" });
+      }
+  
+      res.json({ message: "Login successful" });
+    } catch (err) {
+      console.error(err.message);
+      res.status(500).json({ message: "Server error" });
+    }
+  });
+  
+  
   
   // Start the server
 app.listen(port, () => {
     console.log(`Server running at http://localhost:${port}`);
   });
+
+db.end();
+  
