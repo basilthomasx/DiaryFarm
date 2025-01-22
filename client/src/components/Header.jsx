@@ -1,136 +1,64 @@
 import React, { useState } from 'react';
-import {
-  Milk,
-  ShoppingBag,
-  Info,
-  UserCircle,
-  ChevronDown,
-  ChevronUp,
-  X,
-  AlignJustify,
-  Facebook,
-  Instagram,
-  Twitter,
-} from 'lucide-react';
 
 const Header = () => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-};
+
   const closeAll = () => {
     setIsDropdownOpen(false);
     setIsMobileMenuOpen(false);
   };
 
   const navLinks = [
-    { href: '/', icon: <Milk size={20} />, text: 'Home' },
-    { href: '/products', icon: <ShoppingBag size={20} />, text: 'Products' },
-    { href: '/about', icon: <Info size={20} />, text: 'About' },
+    { href: '/', text: 'Home' },
+    { href: '/products', text: 'Products' },
+    { href: '/about', text: 'About' },
   ];
 
   return (
-    <header className="bg-white shadow-lg fixed top-0 left-0 w-full z-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Top bar with contact info and social media */}
-        <div className="flex items-center justify-between py-2">
-          <div className="flex items-center space-x-4">
-            <a href="#" className="text-green-600 hover:text-blue-600 transition-colors">
-              <Facebook size={16} />
-            </a>
-            <a href="#" className="text-green-600 hover:text-blue-600 transition-colors">
-              <Instagram size={16} />
-            </a>
-            <a href="#" className="text-green-600 hover:text-blue-600 transition-colors">
-              <Twitter size={16} />
-            </a>
-          </div>
-        </div>
+    <div>
+      <header className="bg-white shadow-lg fixed top-0 left-0 w-full z-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          
 
-        {/* Main header section */}
-        <div className="flex items-center justify-between h-16">
-          {/* Logo/Title */}
-          <div className="flex-shrink-0 flex items-center space-x-2">
-            <Milk size={32} className="text-blue-600" />
-            <div>
-              <h1 className="text-2xl font-bold text-blue-800">FreshFarm</h1>
-              <p className="text-sm text-green-600">Freshness Delivered to Your Doorstep</p>
+          <div className="flex items-center justify-between h-20">
+            <div className="flex-shrink-0 flex items-center space-x-3">
+              <span className="text-blue-600 text-2xl">🥛</span>
+              <div>
+                <h1 className="text-2xl font-bold text-blue-800">FreshFarm</h1>
+                <p className="text-sm font-medium text-green-600">Freshness Delivered to Your Doorstep</p>
+              </div>
             </div>
-          </div>
 
-          {/* Desktop navigation */}
-          <nav className="hidden md:flex items-center space-x-10">
-            {navLinks.map((link) => (
-              <a
-                key={link.href}
-                href={link.href}
-                className="flex items-center space-x-2 text-green-600 hover:text-blue-600 transition-colors duration-300"
-              >
-                {link.icon}
-                <span className="font-medium">{link.text}</span>
-              </a>
-            ))}
-
-            {/* Dropdown for Login */}
-            <div className="relative">
-              <button
-                onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                className="flex items-center space-x-2 text-green-600 hover:text-blue-600 transition-colors duration-300"
-              >
-                <span className="font-medium">Login</span>
-                {isDropdownOpen ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-              </button>
-
-              {isDropdownOpen && (
-                <div className="absolute right-0 mt-3 w-48 bg-white rounded-lg shadow-xl py-2 border border-gray-100">
-                  {['Customer', 'Staff', 'Admin'].map((userType) => (
-                    <a
-                      key={userType}
-                      href={`/${userType.toLowerCase()}-login`}
-                      className="block px-4 py-2.5 text-gray-700 hover:bg-green-50 hover:text-green-600 transition-colors duration-200"
-                      onClick={closeAll}
-                    >
-                      {userType}
-                    </a>
-                  ))}
-                </div>
-              )}
-            </div>
-          </nav>
-
-          {/* Mobile menu button */}
-          <button
-            className="md:hidden inline-flex items-center justify-center p-2 rounded-md text-gray-600 hover:text-green-600 hover:bg-gray-100 transition-colors duration-200"
-            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-          >
-            {isMobileMenuOpen ? <X size={24} /> : <AlignJustify size={24} />}
-          </button>
-        </div>
-
-        {/* Mobile menu */}
-        {isMobileMenuOpen && (
-          <div className="md:hidden py-4">
-            <div className="flex flex-col space-y-4">
+            <nav className="hidden md:flex items-center space-x-10">
               {navLinks.map((link) => (
                 <a
                   key={link.href}
                   href={link.href}
-                  className="flex items-center space-x-2 text-gray-600 hover:text-green-600 px-4 py-2.5 rounded-md transition-colors duration-200"
-                  onClick={closeAll}
+                  className="flex items-center space-x-2 text-green-600 hover:text-blue-600 transition-colors duration-300"
                 >
-                  {link.icon}
                   <span className="font-medium">{link.text}</span>
                 </a>
               ))}
 
-              <div className="border-t border-gray-200 pt-4">
-                {['Customer', 'Staff', 'Admin'].map((userType) => (
-                  <a
-                    key={userType}
-                    href={`/${userType.toLowerCase()}-login`}
-                    className="flex items-center space-x-2 text-gray-600 hover:text-green-600 px-4 py-2.5 rounded-md transition-colors duration-200"
-                    onClick={closeAll}
-                  >
-                   
+              <div className="relative">
+                <button
+                  onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                  className="flex items-center space-x-2 text-green-600 hover:text-blue-600 transition-colors duration-300"
+                >
+                  <span className="font-medium">Login</span>
+                  <span className="text-sm">{isDropdownOpen ? '▲' : '▼'}</span>
+                </button>
+
+                {isDropdownOpen && (
+                  <div className="absolute right-0 mt-3 w-48 bg-white rounded-lg shadow-xl py-2 border border-gray-100">
+                    {['Customer', 'Staff', 'Admin'].map((userType) => (
+                      <a
+                        key={userType}
+                        href={`/${userType.toLowerCase()}-login`}
+                        className="block px-4 py-2.5 text-gray-700 hover:bg-green-50 hover:text-green-600 transition-colors duration-200"
+                        onClick={closeAll}
+                      >
                         {userType}
                       </a>
                     ))}
@@ -178,7 +106,16 @@ const Header = () => {
           )}
         </div>
       </header>
-
+{/* New centered div under navbar */}
+<div className="w-full bg-blue-50 pt-24">
+        <div className="max-w-4xl mx-auto py-12 px-4 text-center">
+          <h2 className="text-3xl font-bold text-blue-800 mb-4">Welcome to FreshFarm</h2>
+          <p className="text-lg text-gray-600">
+            Experience the finest dairy products delivered fresh to your doorstep. 
+            We source directly from local farms to ensure quality and freshness.
+          </p>
+        </div>
+      </div>
       <main className="mt-24 p-6 space-y-12">
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
           {[...Array(6)].map((_, idx) => (
@@ -231,8 +168,3 @@ const Header = () => {
 };
 
 export default Header;
-
-
-
-
-
