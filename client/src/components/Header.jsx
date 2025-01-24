@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Home, Package, Info, UserPlus2Icon, User2, Milk, ChevronUp, ChevronDown } from 'lucide-react';
 
 const Header = () => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -10,20 +11,22 @@ const Header = () => {
   };
 
   const navLinks = [
-    { href: '/', text: 'Home' },
-    { href: '/products', text: 'Products' },
-    { href: '/about', text: 'About' },
+    { href: '/', text: 'Home', icon: <Home className="w-5 h-5" /> },
+    { href: '/products', text: 'Products', icon: <Package className="w-5 h-5" /> },
+    { href: '/about', text: 'About', icon: <Info className="w-5 h-5" /> },
+    { href: '/signup', text: 'Sign Up', icon: <UserPlus2Icon className="w-5 h-5" /> },
+
   ];
+  
 
   return (
     <div>
       <header className="bg-white shadow-lg fixed top-0 left-0 w-full z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           
-
           <div className="flex items-center justify-between h-20">
             <div className="flex-shrink-0 flex items-center space-x-3">
-              <span className="text-blue-600 text-2xl">🥛</span>
+              <Milk className="w-8 h-8 text-blue-600" />
               <div>
                 <h1 className="text-2xl font-bold text-blue-800">FreshFarm</h1>
                 <p className="text-sm font-medium text-green-600">Freshness Delivered to Your Doorstep</p>
@@ -37,19 +40,21 @@ const Header = () => {
                   href={link.href}
                   className="flex items-center space-x-2 text-green-600 hover:text-blue-600 transition-colors duration-300"
                 >
+                  {link.icon && <span>{link.icon}</span>}
                   <span className="font-medium">{link.text}</span>
                 </a>
               ))}
 
-              <div className="relative">
-                <button
-                  onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                  className="flex items-center space-x-2 text-green-600 hover:text-blue-600 transition-colors duration-300"
-                >
-                  <span className="font-medium">Login</span>
-                  <span className="text-sm">{isDropdownOpen ? '▲' : '▼'}</span>
-                </button>
-
+                {/* Desktop Login Dropdown*/}
+            <div className="relative">
+              <button
+                onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                className="flex items-center space-x-2 text-green-600 hover:text-blue-600 transition-colors duration-200"
+              >
+                <User2 size={20} />
+                <span className="font-medium">Login</span>
+                {isDropdownOpen ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+              </button>
                 {isDropdownOpen && (
                   <div className="absolute right-0 mt-3 w-48 bg-white rounded-lg shadow-xl py-2 border border-gray-100">
                     {['Customer', 'Staff', 'Admin'].map((userType) => (
@@ -85,6 +90,7 @@ const Header = () => {
                     className="flex items-center space-x-2 text-gray-600 hover:text-green-600 px-4 py-2.5 rounded-md transition-colors duration-200"
                     onClick={closeAll}
                   >
+                    {link.icon && <span>{link.icon}</span>}
                     <span className="font-medium">{link.text}</span>
                   </a>
                 ))}
@@ -97,17 +103,20 @@ const Header = () => {
                       className="flex items-center space-x-2 text-gray-600 hover:text-green-600 px-4 py-2.5 rounded-md transition-colors duration-200"
                       onClick={closeAll}
                     >
+                      <UserCircle className="w-5 h-5" />
                       <span className="font-medium">{userType} Login</span>
                     </a>
                   ))}
                 </div>
               </div>
             </div>
+
           )}
         </div>
       </header>
-{/* New centered div under navbar */}
-<div className="w-full bg-blue-50 pt-24">
+
+      {/* New centered div under navbar */}
+      <div className="w-full bg-blue-50 pt-24">
         <div className="max-w-4xl mx-auto py-12 px-4 text-center">
           <h2 className="text-3xl font-bold text-blue-800 mb-4">Welcome to FreshFarm</h2>
           <p className="text-lg text-gray-600">
@@ -116,35 +125,91 @@ const Header = () => {
           </p>
         </div>
       </div>
+      {/* individual divs */}
       <main className="mt-24 p-6 space-y-12">
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-          {[...Array(6)].map((_, idx) => (
-            <div key={idx} className="flex flex-col items-center space-y-3 p-4 hover:shadow-lg transition-shadow duration-300 rounded-lg">
-              <img
-                src={`/api/placeholder/150/150?text=Image+${idx + 1}`}
-                alt={`Image ${idx + 1}`}
-                className="w-40 h-40 object-cover rounded-lg shadow-md"
-              />
-              <p className="text-center text-gray-700 font-medium">Text {idx + 1}</p>
-            </div>
-          ))}
-        </div>
+  <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+    <div className="flex flex-col items-center space-y-3 p-4 hover:shadow-lg transition-shadow duration-300 rounded-lg">
+      <img
+        src="/api/placeholder/150/150?text=Image+1"
+        alt="Image 1"
+        className="w-40 h-40 object-cover rounded-lg shadow-md"
+      />
+      <p>Milk Collection From Healthy Cattles</p>
+    </div>
+    <div className="flex flex-col items-center space-y-3 p-4 hover:shadow-lg transition-shadow duration-300 rounded-lg">
+      <img
+        src="/api/placeholder/150/150?text=Image+2"
+        alt="Image 2"
+        className="w-40 h-40 object-cover rounded-lg shadow-md"
+      />
+      <p>Quality test</p>
+    </div>
+    <div className="flex flex-col items-center space-y-3 p-4 hover:shadow-lg transition-shadow duration-300 rounded-lg">
+      <img
+        src="/api/placeholder/150/150?text=Image+3"
+        alt="Image 3"
+        className="w-40 h-40 object-cover rounded-lg shadow-md"
+      />
+      <p>Delivered 6am by home</p>
+    </div>
+    <div className="flex flex-col items-center space-y-3 p-4 hover:shadow-lg transition-shadow duration-300 rounded-lg">
+      <img
+        src="/api/placeholder/150/150?text=Image+4"
+        alt="Image 4"
+        className="w-40 h-40 object-cover rounded-lg shadow-md"
+      />
+      <p>Ensuring cattle vaxination</p>
+    </div>
+    <div className="flex flex-col items-center space-y-3 p-4 hover:shadow-lg transition-shadow duration-300 rounded-lg">
+      <img
+        src="/api/placeholder/150/150?text=Image+5"
+        alt="Image 5"
+        className="w-40 h-40 object-cover rounded-lg shadow-md"
+      />
+      <p>Monthly subscriptions for Milk</p>
+    </div>
+    <div className="flex flex-col items-center space-y-3 p-4 hover:shadow-lg transition-shadow duration-300 rounded-lg">
+      <img
+        src="/api/placeholder/150/150?text=Image+6"
+        alt="Image 6"
+        className="w-40 h-40 object-cover rounded-lg shadow-md"
+      />
+      <p>At present delivered within a range of Vazhikadavu Panchayath</p>
+    </div>
+  </div>
 
         <div className="max-w-3xl mx-auto">
           <p className="text-gray-700 text-lg text-center leading-relaxed">
-            This is a placeholder paragraph where you can add any descriptive or informational text.
-            Make it engaging and informative for your visitors.
+            This platform ensuring every farmer to buy and sell their yeild goods for improve stability to customers
           </p>
         </div>
+{/* new div with information */}
+<div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+  {/* First Div */}
+  <div className="p-4 bg-gray-50 rounded-lg">
+    <p className="text-gray-700">Information One</p>
+    <p className="text-gray-600 mt-2">
+      Additional details about information one can be found here. Click to learn more about our services and offerings.
+    </p>
+  </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-          {['Information One', 'Information Two', 'Information Three'].map((text) => (
-            <div key={text} className="p-4 bg-gray-50 rounded-lg">
-              <p className="text-gray-700">{text}</p>
-              <p className="text-gray-600 mt-2">Additional details about {text.toLowerCase()} can be found here. Click to learn more about our services and offerings.</p>
-            </div>
-          ))}
-        </div>
+{/* Second Div */}
+<div className="p-4 bg-gray-50 rounded-lg">
+  <p className="text-gray-700">Information Two</p>
+  <p className="text-gray-600 mt-2">
+    Additional details about information two can be found here. Click to learn more about our services and offerings tailored to your needs.
+  </p>
+</div>
+
+{/* Third Div */}
+<div className="p-4 bg-gray-50 rounded-lg">
+  <p className="text-gray-700">Information Three</p>
+  <p className="text-gray-600 mt-2">
+    Additional details about information three can be found here. Discover how we prioritize quality and sustainability in our services.
+  </p>
+</div>
+</div>
+
 
         <div className="max-w-3xl mx-auto p-6 bg-gray-50 rounded-lg">
           <h2 className="text-xl font-semibold text-gray-800 mb-4">Product Information</h2>
@@ -162,9 +227,10 @@ const Header = () => {
             <p className="text-gray-600">9995496038</p>
           </div>
         </footer>
-      </main>
+        </main>  
     </div>
   );
 };
+
 
 export default Header;

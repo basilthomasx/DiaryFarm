@@ -1,15 +1,39 @@
 import React, { useState } from 'react';
 import { User, Eye, EyeOff, Lock, Store, Leaf, BarChart } from 'lucide-react';
+import axios from 'axios';
 
 const CustomerLogin = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
-    console.log('Farmer login attempted with:', { username, password });
+    
+    if (username.trim() === '' || password.trim() === '') {
+      alert('Username and password are required.');
+      return;
+    }
+  
+    try {
+      const response = await axios.post('http://localhost:3000/api/customer-login', {
+        username: username.trim(),
+        password,
+      });
+  
+      localStorage.setItem('token', response.data.token);
+      window.location.href = '/customer/pannel';
+    } catch (error) {
+      if (error.response && error.response.data.message) {
+        alert(error.response.data.message);
+      } else {
+        alert('Login failed. Please try again.');
+      }
+    }
   };
+  
+
 
   return (
     <div className="min-h-screen flex flex-col lg:flex-row">
@@ -121,14 +145,14 @@ const CustomerLogin = () => {
               type="submit"
               className="w-full bg-green-600 text-white py-3 px-4 rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-colors font-medium"
             >
-              Sign In to Dashboard
+              Sign In 
             </button>
 
             <div className="text-center">
               <p className="text-sm text-gray-600">
                 New to the platform?{' '}
                 <a href="#" className="font-medium text-green-600 hover:text-green-500">
-                  Register your farm
+                  Register your Account
                 </a>
               </p>
             </div>

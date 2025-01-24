@@ -1,15 +1,31 @@
 import React, { useState } from 'react';
-import { User, Eye, EyeOff, Lock, Store, Leaf, BarChart } from 'lucide-react';
+import { User, Eye, EyeOff, Lock, Briefcase} from 'lucide-react';
+import axios from 'axios';
 
 const AdminLogin = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
-    console.log('Farmer login attempted with:', { username, password });
+    
+    try {
+      const response = await axios.post('http://localhost:3000/api/login', {
+        username,
+        password,
+      });
+
+      // Store the token in localStorage
+      localStorage.setItem('token', response.data.token);
+
+      // Redirect to admin page
+      window.location.href = '/admin/dashboard';
+    } catch (error) {
+      alert('Your username or password is incorrect');
+    }
   };
+
 
   return (
     <div className="min-h-screen flex flex-col lg:flex-row">
@@ -17,33 +33,14 @@ const AdminLogin = () => {
       <div className="lg:w-1/2 bg-gradient-to-br from-green-600 to-green-800 p-8 lg:p-12 flex flex-col justify-center">
         <div className="max-w-md mx-auto text-center lg:text-left">
           <div className="mb-6 flex justify-center lg:justify-start">
-            <Store className="h-12 w-12 text-white" />
+          <Briefcase className="h-12 w-12 text-white" />
           </div>
           <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-4">
-            Farmer Dashboard
+            Admin Dashboard
           </h1>
           <p className="text-green-100 text-lg md:text-xl mb-8">
             Manage your dairy business and connect directly with customers
           </p>
-          <div className="hidden lg:block">
-            <div className="bg-green-700/30 rounded-lg p-6 backdrop-blur-sm">
-              <h3 className="text-white font-semibold mb-4">Dashboard Features</h3>
-              <ul className="space-y-3 text-green-100">
-                <li className="flex items-center">
-                  <BarChart className="h-5 w-5 mr-3" />
-                  Track sales and inventory
-                </li>
-                <li className="flex items-center">
-                  <Store className="h-5 w-5 mr-3" />
-                  Manage product listings
-                </li>
-                <li className="flex items-center">
-                  <Leaf className="h-5 w-5 mr-3" />
-                  Connect with local buyers
-                </li>
-              </ul>
-            </div>
-          </div>
         </div>
       </div>
 
@@ -51,15 +48,15 @@ const AdminLogin = () => {
       <div className="lg:w-1/2 flex items-center justify-center p-6 md:p-8 lg:p-12 bg-gray-50">
         <div className="w-full max-w-md space-y-8 bg-white p-6 md:p-8 rounded-2xl shadow-lg">
           <div className="text-center">
-            <h2 className="text-2xl md:text-3xl font-bold text-gray-900">Welcome, Farmer!</h2>
-            <p className="mt-2 text-gray-600">Sign in to manage your dairy business</p>
+            <h2 className="text-2xl md:text-3xl font-bold text-gray-900">Welcome, Admin!</h2>
+            
           </div>
 
           <form onSubmit={handleLogin} className="mt-8 space-y-6">
             <div className="space-y-4">
               <div>
                 <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-1">
-                  Farm Username
+                  Admin ID
                 </label>
                 <div className="relative">
                   <User className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
@@ -124,22 +121,7 @@ const AdminLogin = () => {
               Sign In to Dashboard
             </button>
 
-            <div className="text-center">
-              <p className="text-sm text-gray-600">
-                New to the platform?{' '}
-                <a href="#" className="font-medium text-green-600 hover:text-green-500">
-                  Register your farm
-                </a>
-              </p>
-            </div>
-
-            {/* Quick Help Section */}
-            <div className="mt-8 p-4 bg-green-50 rounded-lg">
-              <h3 className="text-sm font-medium text-green-800 mb-2">Need Help?</h3>
-              <p className="text-sm text-green-600">
-                Contact our farmer support team for assistance with account setup or management.
-              </p>
-            </div>
+            
           </form>
         </div>
       </div>
