@@ -7,7 +7,7 @@ import StaffLogin from './components/StaffLogin';
 import BProduct from './components/BProduct';
 import AdminDashboard from './components/AdminDashboard';
 import CustomerPannel from './components/CustomerPannel';
-
+import SignUp from './components/SignUp';
 
 const App = () => {
   return (
@@ -22,6 +22,7 @@ const App = () => {
             <Route path="/products" element={<BProduct/>}></Route>
             <Route path="/admin/dashboard" element={<AdminDashboard/>}></Route>
             <Route path="/customer/pannel" element={<CustomerPannel/>}></Route>
+            <Route path="/signup" element={<SignUp/>}></Route>
         </Routes>
       </main>
     </Router>
