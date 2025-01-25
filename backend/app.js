@@ -70,70 +70,40 @@ async function seedUsers() {
     res.json({ token });
   });
 
+// Signup Endpoint
+app.post('/api/CustomerSignUp', async (req, res) => {
+  try {
+    const { fullName, email, phone, address, username, password } = req.body;
 
-  // Seed database with users
-async function seedCustomers() {
-    const users = [
-      { username: 'customer1', password: 'password1' },
-      { username: 'customer2', password: 'password2' },
-      { username: 'customer3', password: 'password3' },
-    ];
-  
-    for (const user of users) {
-      const hashedPassword = await bcrypt.hash(user.password, 10);
-      await pool.query(
-        'INSERT INTO customers (username, password) VALUES ($1, $2) ON CONFLICT (username) DO NOTHING',
-        [user.username, hashedPassword]
-      );
+    console.log('Received signup details:', { fullName, email, phone, address, username, password });
+
+    // Check if the email or username already exists
+    const userCheck = await pool.query(
+      'SELECT * FROM customers WHERE email = $1 OR username = $2',
+      [email, username]
+    );
+
+    if (userCheck.rows.length > 0) {
+      return res.status(400).json({ message: 'Email or username already exists' });
     }
+
+    // Hash the password
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // Insert the new customer into the database
+    const result = await pool.query(
+      `INSERT INTO customers (full_name, email, phone, address, username, password)
+       VALUES ($1, $2, $3, $4, $5, $6) RETURNING id`,
+      [fullName, email, phone, address, username, hashedPassword]
+    );
+
+    res.status(201).json({ message: 'User registered successfully', userId: result.rows[0].id });
+  } catch (error) {
+    console.error('Error during signup:', error.message);
+    res.status(500).json({ message: 'Internal Server Error' });
   }
-  
-  // Seed users if the table is empty
-  async function initializeCustomers() {
-    const result = await pool.query('SELECT COUNT(*) FROM customers');
-    const count = parseInt(result.rows[0].count, 10);
-  
-    if (count === 0) {
-      await seedCustomers();
-    }
-  }
-  
-  initializeCustomers();
-  
-  app.post('/api/customer-login', async (req, res) => {
-    try {
-      const { username, password } = req.body;
-  
-      console.log('Received username:', username);
-      console.log('Received password:', password);
-  
-      // Query the database
-      const userResult = await pool.query('SELECT * FROM customers WHERE username = $1', [username]);
-      console.log('Database result:', userResult.rows);
-  
-      if (userResult.rows.length === 0) {
-        return res.status(401).json({ message: 'Your username or password is incorrect' });
-      }
-  
-      const user = userResult.rows[0];
-      console.log('User from DB:', user);
-  
-      // Compare the password
-      const isPasswordValid = await bcrypt.compare(password, user.password);
-      console.log('Is password valid:', isPasswordValid);
-  
-      if (!isPasswordValid) {
-        return res.status(401).json({ message: 'Your username or password is incorrect' });
-      }
-  
-      // Generate JWT token
-      const token = jwt.sign({ username: user.username }, 'your_jwt_secret', { expiresIn: '1h' });
-      res.json({ token });
-    } catch (err) {
-      console.error('Error in login endpoint:', err);
-      res.status(500).json({ message: 'Server error' });
-    }
-  });
+});
+
   
 
 // Start the server

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { User, Mail, Lock, Eye, EyeOff, Phone, MapPin, Leaf, Milk, Store } from 'lucide-react';
 import axios from 'axios';
 
-const SignUp = () => {
+const CustomerSignUp = () => {
   const [formData, setFormData] = useState({
     fullName: '',
     email: '',
@@ -33,7 +33,7 @@ const SignUp = () => {
     }
 
     try {
-      const response = await axios.post('http://localhost:3000/api/customer-signup', {
+      const response = await axios.post('http://localhost:3000/api/CustomerSignUp', {
         fullName: formData.fullName,
         email: formData.email,
         phone: formData.phone,
@@ -43,7 +43,7 @@ const SignUp = () => {
       });
 
       localStorage.setItem('token', response.data.token);
-      window.location.href = '/customer/dashboard';
+      window.location.href = 'customer/pannel';
     } catch (error) {
       alert(error.response?.data?.message || 'Signup failed. Please try again.');
     }
@@ -280,4 +280,4 @@ const SignUp = () => {
   );
 };
 
-export default SignUp;
+export default CustomerSignUp;

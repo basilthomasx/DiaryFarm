@@ -24,7 +24,7 @@ const BProduct = () => {
      { href: '/', text: 'Home', icon: <Home className="w-5 h-5" /> },
      { href: '/products', text: 'Products', icon: <Package className="w-5 h-5" /> },
      { href: '/about', text: 'About', icon: <Info className="w-5 h-5" /> },
-     { href: '/signup', text: 'Sign Up', icon: <UserPlus2Icon className="w-5 h-5" /> },
+     { href: '/customer/signup', text: 'Sign Up', icon: <UserPlus2Icon className="w-5 h-5" /> },
  
    ]; 
    const products = [
