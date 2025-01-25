@@ -104,7 +104,34 @@ app.post('/api/CustomerSignUp', async (req, res) => {
   }
 });
 
-  
+  // Login Route
+app.post("/api/login", async (req, res) => {
+  const { email, password } = req.body;
+
+  try {
+    const userResult = await pool.query("SELECT * FROM users WHERE email = $1", [email]);
+
+    if (userResult.rows.length === 0) {
+      return res.status(401).json({ message: "Invalid email or password" });
+    }
+
+    const user = userResult.rows[0];
+
+    // Compare passwords
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return res.status(401).json({ message: "Invalid email or password" });
+    }
+
+    // Generate a JWT token
+    const token = jwt.sign({ id: user.id, email: user.email }, "your_jwt_secret", { expiresIn: "1h" });
+
+    res.json({ token, message: "Login successful" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Internal server error" });
+  }
+});
 
 // Start the server
 app.listen(3000, () => {

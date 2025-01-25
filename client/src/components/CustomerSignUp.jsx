@@ -43,7 +43,7 @@ const CustomerSignUp = () => {
       });
 
       localStorage.setItem('token', response.data.token);
-      window.location.href = 'customer/pannel';
+      window.location.href = '/products';
     } catch (error) {
       alert(error.response?.data?.message || 'Signup failed. Please try again.');
     }

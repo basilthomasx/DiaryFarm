@@ -5,8 +5,8 @@ import AdminLogin from './components/AdminLogin';
 import StaffLogin from './components/StaffLogin';
 import BProduct from './components/BProduct';
 import AdminDashboard from './components/AdminDashboard';
-import CustomerPannel from './components/CustomerPannel';
 import CustomerSignUp from './components/CustomerSignUp';
+import CustomerLogin from './components/CustomerLogin';
 
 
 const App = () => {
@@ -20,9 +20,8 @@ const App = () => {
             <Route path="/home" element={<Home/>}></Route>
             <Route path="/products" element={<BProduct/>}></Route>
             <Route path="/admin/dashboard" element={<AdminDashboard/>}></Route>
-            <Route path="/customer/pannel" element={<CustomerPannel/>}></Route>
-            <Route path="/signup" element={<CustomerSignUp />} />
-
+            <Route path="/customer/signup" element={<CustomerSignUp />} />
+            <Route path="/customer-login" element={<CustomerLogin />} />
             
         </Routes>
       </main>
