@@ -109,7 +109,7 @@ app.post("/api/login", async (req, res) => {
   const { email, password } = req.body;
 
   try {
-    const userResult = await pool.query("SELECT * FROM users WHERE email = $1", [email]);
+    const userResult = await pool.query("SELECT * FROM user WHERE email = $1", [email]);
 
     if (userResult.rows.length === 0) {
       return res.status(401).json({ message: "Invalid email or password" });
@@ -132,6 +132,65 @@ app.post("/api/login", async (req, res) => {
     res.status(500).json({ message: "Internal server error" });
   }
 });
+
+///stafflogin
+
+// Seed database with staff users
+async function seedStaffUsers() {
+  const staffUsers = [
+    { username: 'staff1', password: 'password1' },
+    { username: 'staff2', password: 'password2' },
+    { username: 'staff3', password: 'password3' },
+  ];
+
+  for (const staff of staffUsers) {
+    const hashedPassword = await bcrypt.hash(staff.password, 10);
+    await pool.query(
+      'INSERT INTO staff (username, password) VALUES ($1, $2) ON CONFLICT (username) DO NOTHING',
+      [staff.username, hashedPassword]
+    );
+  }
+}
+
+// Seed staff users if the table is empty
+async function initializeStaffDatabase() {
+  const result = await pool.query('SELECT COUNT(*) FROM staff');
+  const count = parseInt(result.rows[0].count, 10);
+
+  if (count === 0) {
+    await seedStaffUsers();
+  }
+}
+
+initializeStaffDatabase();
+
+// Staff login endpoint
+app.post('/api/staff-login', async (req, res) => {
+  const { username, password } = req.body;
+
+  try {
+    const userResult = await pool.query('SELECT * FROM staff WHERE username = $1', [username]);
+
+    if (userResult.rows.length === 0) {
+      return res.status(401).json({ message: 'Your username or password is incorrect' });
+    }
+
+    const user = userResult.rows[0];
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+
+    if (!isPasswordValid) {
+      return res.status(401).json({ message: 'Your username or password is incorrect' });
+    }
+
+    const token = jwt.sign({ username: user.username }, 'your_jwt_secret', { expiresIn: '1h' });
+
+    res.json({ token });
+  } catch (error) {
+    console.error('Error during staff login:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
 
 // Start the server
 app.listen(3000, () => {

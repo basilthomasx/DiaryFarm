@@ -10,7 +10,7 @@ const StaffLogin = () => {
     e.preventDefault();
     
     try {
-      const response = await axios.post('http://localhost:3000/api/login', {
+      const response = await axios.post('http://localhost:3000/api/staff-login', {
         username,
         password,
       });
@@ -19,7 +19,7 @@ const StaffLogin = () => {
       localStorage.setItem('token', response.data.token);
 
       // Redirect to admin page
-      window.location.href = '';
+      window.location.href = '/products';
     } catch (error) {
       alert('Your username or password is incorrect');
     }
