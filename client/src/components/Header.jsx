@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Link } from 'lucide-react';
 import { Home, Package, Info, UserPlus2Icon, User2, Milk, ChevronUp, ChevronDown } from 'lucide-react';
 
 const Header = () => {
@@ -28,7 +29,7 @@ const Header = () => {
             <div className="flex-shrink-0 flex items-center space-x-3">
               <Milk className="w-8 h-8 text-blue-600" />
               <div>
-                <a className="text-2xl font-bold text-blue-800">FreshFarm</a>
+                <h1 className="text-2xl font-bold text-blue-800">FreshFarm</h1>
                 <p className="text-sm font-medium text-green-600">Freshness Delivered to Your Doorstep</p>
               </div>
             </div>

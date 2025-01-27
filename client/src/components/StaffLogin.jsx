@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { User, Eye, EyeOff, Lock, Truck,} from 'lucide-react';
+import axios from 'axios';
 
 const StaffLogin = () => {
   const [username, setUsername] = useState('');
@@ -10,7 +11,7 @@ const StaffLogin = () => {
     e.preventDefault();
     
     try {
-      const response = await axios.post('http://localhost:3000/api/staff-login', {
+      const response = await axios.post('http://localhost:3000/api/staff/login', {
         username,
         password,
       });

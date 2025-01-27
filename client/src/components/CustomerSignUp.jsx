@@ -4,10 +4,9 @@ import axios from 'axios';
 
 const CustomerSignUp = () => {
   const [formData, setFormData] = useState({
-    fullName: '',
+    full_name: '',
     email: '',
     phone: '',
-    address: '',
     username: '',
     password: '',
     confirmPassword: ''
@@ -34,10 +33,9 @@ const CustomerSignUp = () => {
 
     try {
       const response = await axios.post('http://localhost:3000/api/CustomerSignUp', {
-        fullName: formData.fullName,
+        full_name: formData.full_name,
         email: formData.email,
         phone: formData.phone,
-        address: formData.address,
         username: formData.username,
         password: formData.password
       });
@@ -97,16 +95,16 @@ const CustomerSignUp = () => {
             <div className="space-y-4">
               {/* Full Name */}
               <div>
-                <label htmlFor="fullName" className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="full_name" className="block text-sm font-medium text-gray-700 mb-1">
                   Full Name
                 </label>
                 <div className="relative">
                   <User className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
                   <input
-                    id="fullName"
-                    name="fullName"
+                    id="full_name"
+                    name="full_name"
                     type="text"
-                    value={formData.fullName}
+                    value={formData.full_name}
                     onChange={handleChange}
                     className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition-colors"
                     placeholder="Enter your full name"
@@ -155,25 +153,6 @@ const CustomerSignUp = () => {
                 </div>
               </div>
 
-              {/* Address */}
-              <div>
-                <label htmlFor="address" className="block text-sm font-medium text-gray-700 mb-1">
-                  Delivery Address
-                </label>
-                <div className="relative">
-                  <MapPin className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
-                  <input
-                    id="address"
-                    name="address"
-                    type="text"
-                    value={formData.address}
-                    onChange={handleChange}
-                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition-colors"
-                    placeholder="Enter your delivery address"
-                    required
-                  />
-                </div>
-              </div>
 
               {/* Username */}
               <div>
