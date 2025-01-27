@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
-import { Store, Leaf, BarChart } from 'lucide-react';
+import { Store, Leaf, BarChart, Lock, EyeOff, Eye } from 'lucide-react';
 
 const CustomerLogin = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -29,8 +30,10 @@ const CustomerLogin = () => {
       if (!response.ok) {
         throw new Error(data.message || 'Login failed');
       }
+    
       localStorage.setItem('token', data.token);
       window.location.href = '/products';
+      
     } catch (error) {
       setError(error.message || 'An error occurred during login');
     } finally {
@@ -88,7 +91,7 @@ const CustomerLogin = () => {
                 {error}
               </div>
             )}
-
+            
             <div className="mt-4">
               <label htmlFor="email" className="block text-sm font-medium text-gray-700">
                 Email
@@ -107,23 +110,40 @@ const CustomerLogin = () => {
               <label htmlFor="password" className="block text-sm font-medium text-gray-700">
                 Password
               </label>
-              <input
-                type="password"
-                id="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-3 py-2 mt-1 border rounded-lg focus:outline-none focus:ring focus:border-green-300"
-                required
-              />
+              <div className="relative">
+                <Lock className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
+                <input
+                  id="password"
+                  type={showPassword ? 'text' : 'password'}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="w-full pl-10 pr-12 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition-colors"
+                  placeholder="Enter your password"
+                  required
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-3 text-gray-400 hover:text-gray-600"
+                >
+                  {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                </button>
+              </div>
             </div>
 
-            {/* Forgot Password Link */}
-            <div className="mt-2 text-right">
-              <a
-                href="/forgot-password"
-                className="text-sm text-green-600 hover:underline"
-              >
-                Forgot Password?
+            <div className="flex items-center justify-between">
+              <div className="flex items-center">
+                <input
+                  id="remember-me"
+                  type="checkbox"
+                  className="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded"
+                />
+                <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-700">
+                  Remember me
+                </label>
+              </div>
+              <a href="#" className="text-sm font-medium text-green-600 hover:text-green-500">
+                Forgot password?
               </a>
             </div>
 
