@@ -3,9 +3,7 @@ import bcrypt from 'bcrypt';
 import pkg from 'pg'; // PostgreSQL client
 import cors from 'cors';
 import jwt from 'jsonwebtoken';
-import nodemailer from 'nodemailer';
-import multer from 'multer';
-
+import nodemailer from 'nodemailer'
 
 
 const { Pool } = pkg;
@@ -258,71 +256,22 @@ app.get('/api/test', async (req, res) => {
       
     }
 });
+app.put("/api/home-sections/:id/image", upload.single("image"), async (req, res) => {
+  const { id } = req.params;
+  const imageUrl = `/uploads/${req.file.filename}`;  // Store only relative path
 
-app.use(cors());
-app.use(express.json());
-app.use('/uploads', express.static('uploads'));
-
-// Multer configuration for image uploads
-const storage = multer.diskStorage({
-  destination: './uploads/',
-  filename: function(req, file, cb) {
-    cb(null, 'image-' + Date.now() + path.extname(file.originalname));
-  }
-});
-
-const upload = multer({
-  storage: storage,
-  limits: { fileSize: 5000000 }, // 5MB limit
-  fileFilter: function(req, file, cb) {
-    checkFileType(file, cb);
-  }
-});
-
-// Check file type
-function checkFileType(file, cb) {
-  const filetypes = /jpeg|jpg|png|gif/;
-  const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
-  const mimetype = filetypes.test(file.mimetype);
-
-  if (mimetype && extname) {
-    return cb(null, true);
-  } else {
-    cb('Error: Images Only!');
-  }
-}
-
-// Routes
-// Get all service cards
-app.get('/api/services', async (req, res) => {
   try {
-    const services = await pool.query(
-      'SELECT * FROM service_cards ORDER BY id ASC'
-    );
-    res.json(services.rows);
-  } catch (err) {
-    console.error(err.message);
-    res.status(500).send('Server error');
-  }
-});
-
-// Update service card image
-app.put('/api/services/:id/image', upload.single('image'), async (req, res) => {
-  try {
-    const { id } = req.params;
-    const imageUrl = `/uploads/${req.file.filename}`;
-    
-    const updateService = await pool.query(
-      'UPDATE service_cards SET image_url = $1 WHERE id = $2 RETURNING *',
+    const result = await pool.query(
+      "UPDATE home_page_sections SET image_url = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2 RETURNING *",
       [imageUrl, id]
     );
-
-    res.json(updateService.rows[0]);
+    res.json(result.rows[0]);
   } catch (err) {
     console.error(err.message);
-    res.status(500).send('Server error');
+    res.status(500).send("Server error");
   }
 });
+
 
 
 // Start the server
