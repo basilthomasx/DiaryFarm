@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { User, Mail, Lock, Eye, EyeOff, Phone, MapPin, Leaf, Milk, Store } from 'lucide-react';
 import axios from 'axios';
+import Header from './Header';
 
 const CustomerSignUp = () => {
   const [formData, setFormData] = useState({
@@ -48,8 +49,11 @@ const CustomerSignUp = () => {
   };
 
   return (
+  <div>
+    <Header/>
     <div className="min-h-screen flex flex-col lg:flex-row">
       {/* Left Side - Hero Section */}
+      <Header/>
       <div className="lg:w-1/2 bg-gradient-to-br from-green-600 to-green-800 p-8 lg:p-12 flex flex-col justify-center">
         <div className="max-w-md mx-auto text-center lg:text-left">
           <div className="mb-6 flex justify-center lg:justify-start">
@@ -256,6 +260,7 @@ const CustomerSignUp = () => {
         </div>
       </div>
     </div>
+    </div>  
   );
 };
 

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { User, Eye, EyeOff, Lock, Truck,} from 'lucide-react';
 import axios from 'axios';
+import Header from './Header';
 
 const StaffLogin = () => {
   const [username, setUsername] = useState('');
@@ -28,6 +29,7 @@ const StaffLogin = () => {
 
   return (
     <div className="min-h-screen flex flex-col lg:flex-row">
+      <Header/>
       {/* Left Side - Hero Section */}
       <div className="lg:w-1/2 bg-gradient-to-br from-green-600 to-green-800 p-8 lg:p-12 flex flex-col justify-center">
         <div className="max-w-md mx-auto text-center lg:text-left">

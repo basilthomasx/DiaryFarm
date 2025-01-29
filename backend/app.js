@@ -3,6 +3,10 @@ import bcrypt from 'bcrypt';
 import pkg from 'pg'; // PostgreSQL client
 import cors from 'cors';
 import jwt from 'jsonwebtoken';
+import nodemailer from 'nodemailer';
+import multer from 'multer';
+
+
 
 const { Pool } = pkg;
 const app = express();
@@ -17,7 +21,90 @@ const pool = new Pool({
     port: 5432,
 });
 
-const JWT_SECRET = '93c1373684773265b1810e46883f77f3f8f38cae1f4f3892597d3714c94f7039';
+// Email configuration (replace with your SMTP settings)
+const transporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: 'your.email@gmail.com',
+    pass: 'your-16-digit-app-password' // Use the App Password here, not your regular Gmail password
+  }
+});
+
+// JWT secret key
+const JWT_SECRET = 'your-secret-key';
+
+// Backend Routes
+app.post('/api/forgot-password', async (req, res) => {
+  try {
+    const { email } = req.body;
+    
+    // Check if user exists
+    const userResult = await pool.query(
+      'SELECT id, email FROM customers WHERE email = $1',
+      [email]
+    );
+
+    if (userResult.rows.length === 0) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    // Generate reset token
+    const token = jwt.sign({ id: userResult.rows[0].id }, JWT_SECRET, { expiresIn: '1h' });
+    
+    // Store token and expiration in database
+    await pool.query(
+      'UPDATE customers SET reset_token = $1, token_expiration = NOW() + interval \'1 hour\' WHERE email = $2',
+      [token, email]
+    );
+
+    // Send email
+    const resetLink = `http://localhost:3000/reset-password/${token}`;
+    await transporter.sendMail({
+      from: 'your_email@gmail.com',
+      to: email,
+      subject: 'Password Reset Request',
+      html: `Click <a href="${resetLink}">here</a> to reset your password. This link will expire in 1 hour.`
+    });
+
+    res.json({ message: 'Password reset email sent' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+app.post('/api/reset-password', async (req, res) => {
+  try {
+    const { token, newPassword } = req.body;
+    
+    // Verify token
+    const decoded = jwt.verify(token, JWT_SECRET);
+    
+    // Check if token exists and hasn't expired
+    const tokenResult = await pool.query(
+      'SELECT id FROM customers WHERE id = $1 AND reset_token = $2 AND token_expiration > NOW()',
+      [decoded.id, token]
+    );
+
+    if (tokenResult.rows.length === 0) {
+      return res.status(400).json({ message: 'Invalid or expired token' });
+    }
+
+    // Hash new password and update
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    await pool.query(
+      'UPDATE customers SET password = $1, reset_token = NULL, token_expiration = NULL WHERE id = $2',
+      [hashedPassword, decoded.id]
+    );
+
+    res.json({ message: 'Password updated successfully' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+
 
 // Utility function to initialize and seed a database table
 async function seedTable(tableName, users) {
@@ -168,8 +255,75 @@ app.get('/api/test', async (req, res) => {
     } catch (err) {
         console.error('Database test failed:', err);
         res.status(500).json({ success: false, error: err.message });
+      
     }
 });
+
+app.use(cors());
+app.use(express.json());
+app.use('/uploads', express.static('uploads'));
+
+// Multer configuration for image uploads
+const storage = multer.diskStorage({
+  destination: './uploads/',
+  filename: function(req, file, cb) {
+    cb(null, 'image-' + Date.now() + path.extname(file.originalname));
+  }
+});
+
+const upload = multer({
+  storage: storage,
+  limits: { fileSize: 5000000 }, // 5MB limit
+  fileFilter: function(req, file, cb) {
+    checkFileType(file, cb);
+  }
+});
+
+// Check file type
+function checkFileType(file, cb) {
+  const filetypes = /jpeg|jpg|png|gif/;
+  const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
+  const mimetype = filetypes.test(file.mimetype);
+
+  if (mimetype && extname) {
+    return cb(null, true);
+  } else {
+    cb('Error: Images Only!');
+  }
+}
+
+// Routes
+// Get all service cards
+app.get('/api/services', async (req, res) => {
+  try {
+    const services = await pool.query(
+      'SELECT * FROM service_cards ORDER BY id ASC'
+    );
+    res.json(services.rows);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server error');
+  }
+});
+
+// Update service card image
+app.put('/api/services/:id/image', upload.single('image'), async (req, res) => {
+  try {
+    const { id } = req.params;
+    const imageUrl = `/uploads/${req.file.filename}`;
+    
+    const updateService = await pool.query(
+      'UPDATE service_cards SET image_url = $1 WHERE id = $2 RETURNING *',
+      [imageUrl, id]
+    );
+
+    res.json(updateService.rows[0]);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server error');
+  }
+});
+
 
 // Start the server
 app.listen(3000, () => {
