@@ -3,10 +3,12 @@ import {BrowserRouter as Router, Route, Routes} from "react-router-dom";
 import Home from './components/Home';
 import AdminLogin from './components/AdminLogin';
 import StaffLogin from './components/StaffLogin';
-import BProduct from './components/BProduct';
+import ProductDisplay from './components/ProductDisplay';
 import AdminDashboard from './components/AdminDashboard';
 import CustomerSignUp from './components/CustomerSignUp';
 import CustomerLogin from './components/CustomerLogin';
+import About from './components/About';
+import ProductsManagement from './components/ProductsManagement';
 
 
 
@@ -20,12 +22,12 @@ const App = () => {
             <Route path="/admin-login" element={<AdminLogin/>}></Route>
             <Route path="/staff-login" element={<StaffLogin/>}></Route>
             <Route path="/home" element={<Home/>}></Route>
-            <Route path="/products" element={<BProduct/>}></Route>
-      
+            <Route path="/About" element={<About/>}></Route>      
             <Route path="/admin/dashboard" element={<AdminDashboard/>}></Route>
             <Route path="/customer/signup" element={<CustomerSignUp />} />
             <Route path="/customer-login" element={<CustomerLogin />} />
-            
+            <Route path="/admin/product-management" element={<ProductsManagement />} />
+            <Route path="/products" element={<ProductDisplay />} />
         </Routes>
       </main>
     </Router>

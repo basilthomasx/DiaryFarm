@@ -29,8 +29,8 @@ const Header = () => {
             <div className="flex-shrink-0 flex items-center space-x-3">
               <Milk className="w-8 h-8 text-blue-600" />
               <div>
-                <h1 className="text-2xl font-bold text-blue-800">FreshFarm</h1>
-                <p className="text-sm font-medium text-green-600">Freshness Delivered to Your Doorstep</p>
+                <h1 className="text-2xl font-bold text-blue-800">God’s Own Dairy</h1>
+                <p className="text-sm font-bold text-green-600">ദൈവത്തിന്റെ നാട്ടിൽ നിന്ന്, ശുദ്ധിയുടെ അമൃത്</p>
               </div>
             </div>
 

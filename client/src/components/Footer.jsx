@@ -50,12 +50,12 @@ const Footer = () => {
             <div className="space-y-6">
               <div className="flex items-center space-x-3">
                 <img 
-                  src="/api/placeholder/48/48" 
+                  src="/download.jpg" 
                   alt="Dairy Farm Logo" 
                   className="w-12 h-12 rounded-full"
                 />
                 <h2 className="text-2xl font-bold text-gray-800">
-                  Dairy Farm
+                God’s Own Dairy
                 </h2>
               </div>
               <p className="text-gray-600">

@@ -4,12 +4,22 @@ import pkg from 'pg'; // PostgreSQL client
 import cors from 'cors';
 import jwt from 'jsonwebtoken';
 import nodemailer from 'nodemailer'
+import multer from 'multer';
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
+
+
+// Fix for __dirname in ES Modules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const { Pool } = pkg;
 const app = express();
 app.use(express.json()); // Middleware to parse JSON bodies
 app.use(cors());
+app.use('/uploads', express.static('uploads'));
 
 const pool = new Pool({
     user: 'postgres',
@@ -18,6 +28,51 @@ const pool = new Pool({
     password: 'Basil123@', // Replace with your actual password
     port: 5432,
 });
+
+
+// Configure multer for file upload
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+      const dir = 'uploads';
+      // Create uploads directory if it doesn't exist
+      if (!fs.existsSync(dir)) {
+          fs.mkdirSync(dir);
+      }
+      cb(null, dir);
+  },
+  filename: (req, file, cb) => {
+      // Create unique filename with timestamp
+      const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+      cb(null, uniqueSuffix + path.extname(file.originalname));
+  }
+});
+
+const fileFilter = (req, file, cb) => {
+  const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
+  if (allowedTypes.includes(file.mimetype)) {
+      cb(null, true);
+  } else {
+      cb(new Error('Invalid file type. Only JPEG, JPG, PNG and GIF allowed.'), false);
+  }
+};
+
+const upload = multer({
+  storage: storage,
+  fileFilter: fileFilter,
+  limits: {
+      fileSize: 5 * 1024 * 1024 // 5MB limit
+  }
+});
+
+
+// Error handling middleware
+const errorHandler = (err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).json({
+      error: err.message || 'Something went wrong!'
+  });
+};
+
 
 // Email configuration (replace with your SMTP settings)
 const transporter = nodemailer.createTransport({
@@ -256,21 +311,193 @@ app.get('/api/test', async (req, res) => {
       
     }
 });
-app.put("/api/home-sections/:id/image", upload.single("image"), async (req, res) => {
-  const { id } = req.params;
-  const imageUrl = `/uploads/${req.file.filename}`;  // Store only relative path
 
+
+
+
+
+// product management component
+
+// Create - Upload product with image
+app.post('/images', upload.single('image'), async (req, res, next) => {
   try {
-    const result = await pool.query(
-      "UPDATE home_page_sections SET image_url = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2 RETURNING *",
-      [imageUrl, id]
-    );
-    res.json(result.rows[0]);
-  } catch (err) {
-    console.error(err.message);
-    res.status(500).send("Server error");
+      const { image_title, description } = req.body;
+      
+      if (!req.file) {
+          throw new Error('No image file provided');
+      }
+
+      const result = await pool.query(
+          'INSERT INTO images (file_name, image_title, description) VALUES ($1, $2, $3) RETURNING *',
+          [req.file.filename, image_title, description]
+      );
+
+      res.status(201).json({
+          message: 'Product created successfully',
+          product: result.rows[0]
+      });
+  } catch (error) {
+      // Delete uploaded file if database operation fails
+      if (req.file) {
+          fs.unlink(req.file.path, (err) => {
+              if (err) console.error('Error deleting file:', err);
+          });
+      }
+      next(error);
   }
 });
+
+// Read - Get all products
+app.get('/images', async (req, res, next) => {
+  try {
+      const result = await pool.query(
+          'SELECT * FROM images ORDER BY created_at DESC'
+      );
+      res.json(result.rows);
+  } catch (error) {
+      next(error);
+  }
+});
+
+// Add this route to your Express backend
+app.get('/api/product-count', async (req, res) => {
+    try {
+        const result = await pool.query('SELECT COUNT(*) as count FROM images');
+        res.json({ count: result.rows[0].count });
+    } catch (error) {
+        console.error('Error fetching product count:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
+// Read - Get single product
+app.get('/images/:id', async (req, res, next) => {
+  try {
+      const { id } = req.params;
+      const result = await pool.query(
+          'SELECT * FROM images WHERE id = $1',
+          [id]
+      );
+
+      if (result.rows.length === 0) {
+          return res.status(404).json({
+              error: 'Product not found'
+          });
+      }
+
+      res.json(result.rows[0]);
+  } catch (error) {
+      next(error);
+  }
+});
+
+// Update - Update product details
+app.put('/images/:id', async (req, res, next) => {
+  try {
+      const { id } = req.params;
+      const { image_title, description } = req.body;
+
+      const result = await pool.query(
+          'UPDATE images SET image_title = $1, description = $2, created_at = CURRENT_TIMESTAMP WHERE id = $3 RETURNING *',
+          [image_title, description, id]
+      );
+
+      if (result.rows.length === 0) {
+          return res.status(404).json({
+              error: 'Product not found'
+          });
+      }
+
+      res.json({
+          message: 'Product updated successfully',
+          product: result.rows[0]
+      });
+  } catch (error) {
+      next(error);
+  }
+});
+
+// Delete - Delete product and its image
+app.delete('/images/:id', async (req, res, next) => {
+  const client = await pool.connect();
+  
+  try {
+      await client.query('BEGIN');
+      
+      const { id } = req.params;
+      
+      const fileResult = await client.query(
+          'SELECT file_name FROM images WHERE id = $1',
+          [id]
+      );
+
+      if (fileResult.rows.length === 0) {
+          return res.status(404).json({
+              error: 'Product not found'
+          });
+      }
+
+      await client.query(
+          'DELETE FROM images WHERE id = $1',
+          [id]
+      );
+
+      // Updated file path creation
+      const filePath = path.join(__dirname, 'uploads', fileResult.rows[0].file_name);
+      fs.unlink(filePath, (err) => {
+          if (err && err.code !== 'ENOENT') {
+              console.error('Error deleting file:', err);
+          }
+      });
+
+      await client.query('COMMIT');
+
+      res.json({
+          message: 'Product deleted successfully'
+      });
+  } catch (error) {
+      await client.query('ROLLBACK');
+      next(error);
+  } finally {
+      client.release();
+  }
+});
+// Apply error handling middleware
+app.use(errorHandler);
+
+
+// review component
+
+// Add a new review
+app.post('/api/reviews', async (req, res) => {
+    const { image_id, review_text, rating } = req.body;
+    
+    try {
+      const result = await pool.query(
+        'INSERT INTO reviews (image_id, review_text, rating) VALUES ($1, $2, $3) RETURNING *',
+        [image_id, review_text, rating]
+      );
+      res.json(result.rows[0]);
+    } catch (err) {
+      res.status(500).json({ error: 'Error adding review' });
+    }
+  });
+  
+  // Get all reviews for an image
+  app.get('/api/reviews/:imageId', async (req, res) => {
+    const imageId = req.params.imageId;
+    
+    try {
+      const result = await pool.query(
+        'SELECT * FROM reviews WHERE image_id = $1 ORDER BY created_at DESC',
+        [imageId]
+      );
+      res.json(result.rows);
+    } catch (err) {
+      res.status(500).json({ error: 'Error fetching reviews' });
+    }
+  });
+  
 
 
 
