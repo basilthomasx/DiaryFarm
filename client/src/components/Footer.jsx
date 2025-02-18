@@ -36,9 +36,9 @@ const Footer = () => {
   ];
 
   const contactInfo = [
-    { icon: <Phone size={20} />, text: '+91 123 456 7890' },
+    { icon: <Phone size={20} />, text: '+91 7025516193' },
     { icon: <Mail size={20} />, text: 'contact@dairyfarm.com' },
-    { icon: <MapPin size={20} />, text: 'Vazhikadavu, Kerala, India' }
+    { icon: <MapPin size={20} />, text: 'Pathiripadam, Kerala, India' }
   ];
 
   return (
@@ -110,13 +110,13 @@ const Footer = () => {
               </p>
               <div className="flex space-x-8">
                 <a 
-                  href="/privacy" 
+                  href="" 
                   className="text-sm text-gray-600 hover:text-gray-800 transition-colors hover:underline"
                 >
                   Privacy Policy
                 </a>
                 <a 
-                  href="/terms" 
+                  href="" 
                   className="text-sm text-gray-600 hover:text-gray-800 transition-colors hover:underline"
                 >
                   Terms of Service

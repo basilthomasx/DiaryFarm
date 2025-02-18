@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { User, Mail, Lock, Eye, EyeOff, Phone, MapPin, Leaf, Milk, Store } from 'lucide-react';
 import axios from 'axios';
 import Header from './Header';
+import { Link } from 'react-router-dom';
 
 const CustomerSignUp = () => {
   const [formData, setFormData] = useState({
@@ -42,7 +43,8 @@ const CustomerSignUp = () => {
       });
 
       localStorage.setItem('token', response.data.token);
-      window.location.href = '/products';
+      window.location.href = `/products`;
+      
     } catch (error) {
       alert(error.response?.data?.message || 'Signup failed. Please try again.');
     }
@@ -240,14 +242,17 @@ const CustomerSignUp = () => {
               Create Account
             </button>
 
-            <div className="text-center">
+            <div className="mt-4 text-center">
               <p className="text-sm text-gray-600">
-                Already have an account?{' '}
-                <a href="/login" className="font-medium text-green-600 hover:text-green-500">
-                  Sign In
-                </a>
-              </p>
-            </div>
+              Already have an account?{' '}
+                <Link 
+  to="/customer-login"
+  className="font-medium text-green-600 hover:text-green-500"
+>
+Sign In
+</Link>
+                </p>
+                </div>
 
             {/* Quick Help Section */}
             <div className="mt-8 p-4 bg-green-50 rounded-lg">

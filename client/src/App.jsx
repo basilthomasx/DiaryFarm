@@ -3,13 +3,21 @@ import {BrowserRouter as Router, Route, Routes} from "react-router-dom";
 import Home from './components/Home';
 import AdminLogin from './components/AdminLogin';
 import StaffLogin from './components/StaffLogin';
-import ProductDisplay from './components/ProductDisplay';
-import AdminDashboard from './components/AdminDashboard';
 import CustomerSignUp from './components/CustomerSignUp';
 import CustomerLogin from './components/CustomerLogin';
 import About from './components/About';
-import ProductsManagement from './components/ProductsManagement';
+import ProductManagement from './components/ProductManagement';
+import StaffManagement from './components/StaffManagement';
+import ProductListing from './components/ProductListing';
+import CheckoutPage from './components/CheckoutPage';
+import AdminDashboard from './components/AdminDashboard';
+import PaymentPage from './components/PaymentPage';
+import ProductDetails from './components/ProductDetails';
+import OrderDetails from './components/OrderDetails';
+import OrdersList from './components/OrderList';
 
+// import ResetPassword from './components/ResetPassword';
+// import PasswordResetForm from './components/PasswordResetForm';
 
 
 const App = () => {
@@ -23,11 +31,20 @@ const App = () => {
             <Route path="/staff-login" element={<StaffLogin/>}></Route>
             <Route path="/home" element={<Home/>}></Route>
             <Route path="/About" element={<About/>}></Route>      
-            <Route path="/admin/dashboard" element={<AdminDashboard/>}></Route>
             <Route path="/customer/signup" element={<CustomerSignUp />} />
             <Route path="/customer-login" element={<CustomerLogin />} />
-            <Route path="/admin/product-management" element={<ProductsManagement />} />
-            <Route path="/products" element={<ProductDisplay />} />
+            <Route path="/product-management" element={<ProductManagement />} />
+            <Route path="/staffs" element={<StaffManagement/>} />
+            <Route path="/products" element={<ProductListing/>} />
+            <Route path="/checkout/:id" element={<CheckoutPage/>} />
+            <Route path="/admin" element={<AdminDashboard/>} />
+            <Route path="/payment" element={<PaymentPage/>} />
+            <Route path="/product-details/:id" element={<ProductDetails/>} />
+            <Route path="/orders" element={<OrdersList />} />
+            <Route path="/orders/:id" element={<OrderDetails />} />
+
+             {/* <Route path="/password-reset-form" element={<PasswordResetForm/>} /> */}
+            {/* <Route path="/reset-password" element={<ResetPassword/>} /> */}
         </Routes>
       </main>
     </Router>

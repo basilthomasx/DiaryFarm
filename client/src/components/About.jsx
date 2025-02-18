@@ -14,7 +14,7 @@ const About = () => {
     {
       icon: <HeartIcon className="w-8 h-8 text-blue-600 mb-4" />,
       title: "Family Values",
-      description: "Five generations of dairy farming tradition, passing down our love for the land and animals."
+      description: "Caring like family."
     },
     {
       icon: <LeafIcon className="w-8 h-8 text-green-600 mb-4" />,
@@ -30,24 +30,24 @@ const About = () => {
 
   const timeline = [
     {
-      year: "1923",
+      year: "2024",
       title: "Our Beginning",
-      description: "The Anderson family established their first dairy farm with just 12 cows."
+      description: "Three young innovators take the first step toward revolutionizing agriculture with their groundbreaking idea.."
     },
     {
-      year: "1955",
+      year: "2025",
       title: "Modernization",
-      description: "Introduced the first mechanical milking system in the county."
+      description: "Introduced the first fresh milk selling platform."
     },
     {
-      year: "1988",
+      year: "2018",
       title: "Organic Transition",
-      description: "Began the transition to fully organic dairy production."
+      description: "Our farm has been collaborating with Milma for the past six years."
     },
     {
-      year: "2020",
+      year: "2022",
       title: "Innovation",
-      description: "Implemented solar power and sustainable water management systems."
+      description: "Implemented a solar power farm with government support."
     }
   ];
 
@@ -61,11 +61,12 @@ const About = () => {
           alt="Dairy Farm Hero"
           className="w-full h-full object-cover"
         />
-        <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+        <div className="absolute inset-0 bg-green-500 flex items-center justify-center">
           <div className="text-center text-white px-4">
-            <h1 className="text-5xl font-bold mb-4">Green Meadows Dairy</h1>
+            <h1 className="text-5xl font-bold mb-4">God's Own Dairy</h1>
             <p className="text-xl max-w-2xl mx-auto">
-              Nurturing tradition, embracing innovation, and delivering excellence in dairy since 1923
+            ടെക്നോളജിയുടെ സ്പർശം, പ്രകൃതിയുടെ ശുദ്ധി! 
+            Since 2018
             </p>
           </div>
         </div>
@@ -79,17 +80,17 @@ const About = () => {
           <div className="grid md:grid-cols-2 gap-8 items-center">
             <div>
               <img
-                src="/api/placeholder/600/400"
+                src="/healthycows.jpg"
                 alt="Farm History"
                 className="rounded-lg shadow-lg"
               />
             </div>
             <div className="space-y-4">
-              <p className="text-lg text-gray-700">
-                For nearly a century, Green Meadows Dairy has been more than just a farm - it's been a legacy of excellence in dairy farming. Our story began in 1923 when the Anderson family first broke ground on what would become one of the region's most respected dairy operations.
+              <p className="text-lg font-bold text-gray-700">
+              Our vision is to inspire interest in farming and promote the growth of agricultural products.
               </p>
-              <p className="text-lg text-gray-700">
-                Today, we continue to honor our heritage while embracing modern sustainable practices. Our commitment to quality, animal welfare, and environmental stewardship drives everything we do.
+              <p className="text-lg font-bold text-gray-700">
+              We are currently implementing our vision of merging farming with technology to create diverse opportunities in the agricultural sector.
               </p>
             </div>
           </div>
@@ -136,22 +137,22 @@ const About = () => {
         <div className="grid md:grid-cols-4 gap-8 text-center">
           <div className="bg-blue-50 rounded-lg p-6 hover:shadow-md transition-shadow duration-300">
             <MilkIcon className="w-8 h-8 mx-auto mb-4 text-blue-600" />
-            <div className="text-3xl font-bold text-blue-600 mb-2">500+</div>
+            <div className="text-3xl font-bold text-blue-600 mb-2">15+</div>
             <div className="text-gray-600">Happy Cows</div>
           </div>
           <div className="bg-green-50 rounded-lg p-6 hover:shadow-md transition-shadow duration-300">
             <SunIcon className="w-8 h-8 mx-auto mb-4 text-green-600" />
-            <div className="text-3xl font-bold text-green-600 mb-2">100%</div>
+            <div className="text-3xl font-bold text-green-600 mb-2">50%</div>
             <div className="text-gray-600">Solar Powered</div>
           </div>
           <div className="bg-yellow-50 rounded-lg p-6 hover:shadow-md transition-shadow duration-300">
             <AwardIcon className="w-8 h-8 mx-auto mb-4 text-yellow-600" />
-            <div className="text-3xl font-bold text-yellow-600 mb-2">15+</div>
+            <div className="text-3xl font-bold text-yellow-600 mb-2">5+</div>
             <div className="text-gray-600">Awards Won</div>
           </div>
           <div className="bg-red-50 rounded-lg p-6 hover:shadow-md transition-shadow duration-300">
             <UsersIcon className="w-8 h-8 mx-auto mb-4 text-red-600" />
-            <div className="text-3xl font-bold text-red-600 mb-2">50+</div>
+            <div className="text-3xl font-bold text-red-600 mb-2">6+</div>
             <div className="text-gray-600">Team Members</div>
           </div>
         </div>

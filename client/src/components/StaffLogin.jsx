@@ -20,7 +20,7 @@ const StaffLogin = () => {
       // Store the token in localStorage
       localStorage.setItem('token', response.data.token);
 
-      // Redirect to admin page
+      // Redirect to staffpage
       window.location.href = '/products';
     } catch (error) {
       alert('Your username or password is incorrect');

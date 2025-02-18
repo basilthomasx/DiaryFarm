@@ -21,7 +21,7 @@ const AdminLogin = () => {
       localStorage.setItem('token', response.data.token);
 
       // Redirect to admin page
-      window.location.href = '/admin/dashboard';
+      window.location.href = '/admin';
     } catch (error) {
       alert('Your username or password is incorrect');
     }

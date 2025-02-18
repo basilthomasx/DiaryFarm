@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
 import { Store, Leaf, BarChart, Lock, EyeOff, Eye } from 'lucide-react';
 import Header from './Header';
-import PasswordReset from './PasswordReset'; // Import the PasswordReset component
-
+import { Link } from 'react-router-dom';
 const CustomerLogin = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -45,7 +44,7 @@ const CustomerLogin = () => {
   };
 
   if (showPasswordReset) {
-    return <PasswordReset />;
+    return  ; //password page here
   }
 
   return (
@@ -154,9 +153,16 @@ const CustomerLogin = () => {
                 <button
                   type="button"
                   onClick={() => setShowPasswordReset(true)}
-                  className="text-sm font-medium text-green-600 hover:text-green-500"
+                  className="text-sm font-medium text-green-600 hover:text-green-500" 
                 >
+                  <Link 
+                    to="/password-reset-form"
+                    className="font-medium text-green-600 hover:text-green-500"
+                  >
                   Forgot password?
+                  </Link>
+               
+                  
                 </button>
               </div>
 
@@ -170,6 +176,17 @@ const CustomerLogin = () => {
                 {loading ? 'Logging in...' : 'Login'}
               </button>
             </form>
+            <div className="mt-4 text-center">
+              <p className="text-sm text-gray-600">
+                Don't have an account?{' '}
+                <Link 
+  to="/customer/signup"
+  className="font-medium text-green-600 hover:text-green-500"
+>
+  Sign up
+</Link>
+                </p>
+                </div>
           </div>
         </div>
       </div>

@@ -15,12 +15,13 @@ const Header = () => {
     { href: '/', text: 'Home', icon: <Home className="w-5 h-5" /> },
     { href: '/products', text: 'Products', icon: <Package className="w-5 h-5" /> },
     { href: '/about', text: 'About', icon: <Info className="w-5 h-5" /> },
-    { href: '/customer/signup', text: 'Sign Up', icon: <UserPlus2Icon className="w-5 h-5" /> },
+    
 
   ];
   
 
   return (
+    
     <div>
       <header className="bg-white shadow-lg fixed top-0 left-0 w-full z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
