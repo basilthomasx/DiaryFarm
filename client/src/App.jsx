@@ -15,8 +15,11 @@ import PaymentPage from './components/PaymentPage';
 import ProductDetails from './components/ProductDetails';
 import OrderDetails from './components/OrderDetails';
 import OrdersList from './components/OrderList';
-
-// import ResetPassword from './components/ResetPassword';
+import HelpAndSupport from './components/HelpAndSupport';
+import MilkQualityUpdate from './components/MilkQualityUpdate';
+import StaffDeliveryManagement from './components/StaffDeliveryManagement';
+import AdminHeader from './components/AdminHeader';
+import BackButton from './components/BackButton';
 // import PasswordResetForm from './components/PasswordResetForm';
 
 
@@ -42,11 +45,15 @@ const App = () => {
             <Route path="/product-details/:id" element={<ProductDetails/>} />
             <Route path="/orders" element={<OrdersList />} />
             <Route path="/orders/:id" element={<OrderDetails />} />
-
-             {/* <Route path="/password-reset-form" element={<PasswordResetForm/>} /> */}
-            {/* <Route path="/reset-password" element={<ResetPassword/>} /> */}
+            <Route path="/help/and/support" element={<HelpAndSupport />} />
+            <Route path="/admin/milk-quality" element={<MilkQualityUpdate />} />
+            <Route path="/staff/delivery-management" element={<StaffDeliveryManagement />} />
+            <Route path="/admin/header" element={<AdminHeader/>} />
+            <Route path="back/button" element={<BackButton/>} />
         </Routes>
+        
       </main>
+      
     </Router>
   );
 };

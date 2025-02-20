@@ -4,6 +4,7 @@ import axios from 'axios';
 import Header from './Header';
 import { Link } from 'react-router-dom';
 
+
 const CustomerSignUp = () => {
   const [formData, setFormData] = useState({
     full_name: '',
@@ -15,6 +16,52 @@ const CustomerSignUp = () => {
   });
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [errors, setErrors] = useState({});
+
+  const validateForm = () => {
+    const newErrors = {};
+    
+    // Full Name validation - no numbers allowed
+    if (/\d/.test(formData.full_name)) {
+      newErrors.full_name = 'Full name cannot contain numbers';
+    }
+    
+    // Email validation - must contain @ symbol
+    if (!formData.email.includes('@')) {
+      newErrors.email = 'Email must contain @ symbol';
+    }
+    
+    // Phone validation - must be exactly 10 digits
+    if (!/^\d{10}$/.test(formData.phone)) {
+      newErrors.phone = 'Phone number must be exactly 10 digits';
+    }
+    
+    // Username validation - no numbers allowed
+    if (/\d/.test(formData.username)) {
+      newErrors.username = 'Username cannot contain numbers';
+    }
+    
+    // Password validation - adding criteria
+    if (formData.password.length < 8) {
+      newErrors.password = 'Password must be at least 8 characters long';
+    } else if (!/[A-Z]/.test(formData.password)) {
+      newErrors.password = 'Password must contain at least one uppercase letter';
+    } else if (!/[a-z]/.test(formData.password)) {
+      newErrors.password = 'Password must contain at least one lowercase letter';
+    } else if (!/\d/.test(formData.password)) {
+      newErrors.password = 'Password must contain at least one number';
+    } else if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(formData.password)) {
+      newErrors.password = 'Password must contain at least one special character';
+    }
+    
+    // Confirm password validation
+    if (formData.password !== formData.confirmPassword) {
+      newErrors.confirmPassword = 'Passwords do not match';
+    }
+    
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -22,15 +69,21 @@ const CustomerSignUp = () => {
       ...prevState,
       [name]: value
     }));
+    
+    // Clear error when field is being edited
+    if (errors[name]) {
+      setErrors(prevErrors => ({
+        ...prevErrors,
+        [name]: undefined
+      }));
+    }
   };
 
   const handleSignup = async (e) => {
     e.preventDefault();
     
-    // Basic validation
-    if (formData.password !== formData.confirmPassword) {
-      alert('Passwords do not match');
-      return;
+    if (!validateForm()) {
+      return; // Stop if validation fails
     }
 
     try {
@@ -43,7 +96,7 @@ const CustomerSignUp = () => {
       });
 
       localStorage.setItem('token', response.data.token);
-      window.location.href = `/products`;
+      window.location.href = `/`;
       
     } catch (error) {
       alert(error.response?.data?.message || 'Signup failed. Please try again.');
@@ -55,7 +108,6 @@ const CustomerSignUp = () => {
     <Header/>
     <div className="min-h-screen flex flex-col lg:flex-row">
       {/* Left Side - Hero Section */}
-      <Header/>
       <div className="lg:w-1/2 bg-gradient-to-br from-green-600 to-green-800 p-8 lg:p-12 flex flex-col justify-center">
         <div className="max-w-md mx-auto text-center lg:text-left">
           <div className="mb-6 flex justify-center lg:justify-start">
@@ -112,11 +164,12 @@ const CustomerSignUp = () => {
                     type="text"
                     value={formData.full_name}
                     onChange={handleChange}
-                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition-colors"
-                    placeholder="Enter your full name"
+                    className={`w-full pl-10 pr-4 py-2 border ${errors.full_name ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition-colors`}
+                    placeholder="Enter your full name (no numbers)"
                     required
                   />
                 </div>
+                {errors.full_name && <p className="text-red-500 text-xs mt-1">{errors.full_name}</p>}
               </div>
 
               {/* Email */}
@@ -132,11 +185,12 @@ const CustomerSignUp = () => {
                     type="email"
                     value={formData.email}
                     onChange={handleChange}
-                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition-colors"
-                    placeholder="Enter your email"
+                    className={`w-full pl-10 pr-4 py-2 border ${errors.email ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition-colors`}
+                    placeholder="Enter your email (must include @)"
                     required
                   />
                 </div>
+                {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email}</p>}
               </div>
 
               {/* Phone */}
@@ -152,11 +206,12 @@ const CustomerSignUp = () => {
                     type="tel"
                     value={formData.phone}
                     onChange={handleChange}
-                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition-colors"
-                    placeholder="Enter your phone number"
+                    className={`w-full pl-10 pr-4 py-2 border ${errors.phone ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition-colors`}
+                    placeholder="Enter 10 digit phone number"
                     required
                   />
                 </div>
+                {errors.phone && <p className="text-red-500 text-xs mt-1">{errors.phone}</p>}
               </div>
 
 
@@ -173,11 +228,12 @@ const CustomerSignUp = () => {
                     type="text"
                     value={formData.username}
                     onChange={handleChange}
-                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition-colors"
-                    placeholder="Choose a username"
+                    className={`w-full pl-10 pr-4 py-2 border ${errors.username ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition-colors`}
+                    placeholder="Choose a username (no numbers)"
                     required
                   />
                 </div>
+                {errors.username && <p className="text-red-500 text-xs mt-1">{errors.username}</p>}
               </div>
 
               {/* Password */}
@@ -193,8 +249,8 @@ const CustomerSignUp = () => {
                     type={showPassword ? 'text' : 'password'}
                     value={formData.password}
                     onChange={handleChange}
-                    className="w-full pl-10 pr-12 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition-colors"
-                    placeholder="Create a password"
+                    className={`w-full pl-10 pr-12 py-2 border ${errors.password ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition-colors`}
+                    placeholder="Create a strong password"
                     required
                   />
                   <button
@@ -205,6 +261,10 @@ const CustomerSignUp = () => {
                     {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                   </button>
                 </div>
+                {errors.password && <p className="text-red-500 text-xs mt-1">{errors.password}</p>}
+                <p className="text-gray-500 text-xs mt-1">
+                  Password must be at least 8 characters long, include uppercase, lowercase, number, and special character.
+                </p>
               </div>
 
               {/* Confirm Password */}
@@ -220,7 +280,7 @@ const CustomerSignUp = () => {
                     type={showConfirmPassword ? 'text' : 'password'}
                     value={formData.confirmPassword}
                     onChange={handleChange}
-                    className="w-full pl-10 pr-12 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition-colors"
+                    className={`w-full pl-10 pr-12 py-2 border ${errors.confirmPassword ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition-colors`}
                     placeholder="Confirm your password"
                     required
                   />
@@ -232,6 +292,7 @@ const CustomerSignUp = () => {
                     {showConfirmPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                   </button>
                 </div>
+                {errors.confirmPassword && <p className="text-red-500 text-xs mt-1">{errors.confirmPassword}</p>}
               </div>
             </div>
 
@@ -246,13 +307,13 @@ const CustomerSignUp = () => {
               <p className="text-sm text-gray-600">
               Already have an account?{' '}
                 <Link 
-  to="/customer-login"
-  className="font-medium text-green-600 hover:text-green-500"
->
-Sign In
-</Link>
-                </p>
-                </div>
+                  to="/customer-login"
+                  className="font-medium text-green-600 hover:text-green-500"
+                >
+                Sign In
+                </Link>
+              </p>
+            </div>
 
             {/* Quick Help Section */}
             <div className="mt-8 p-4 bg-green-50 rounded-lg">
@@ -264,8 +325,9 @@ Sign In
           </form>
         </div>
       </div>
+     
     </div>
-    </div>  
+  </div>  
   );
 };
 

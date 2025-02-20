@@ -36,31 +36,30 @@ const Footer = () => {
   ];
 
   const contactInfo = [
-    { icon: <Phone size={20} />, text: '+91 7025516193' },
-    { icon: <Mail size={20} />, text: 'contact@dairyfarm.com' },
+    { icon: <Phone size={20} />, text: '+91 7511122770' },
+    { icon: <Mail size={20} />, text: 'dairytest03@gmail.com' },
     { icon: <MapPin size={20} />, text: 'Pathiripadam, Kerala, India' }
   ];
 
   return (
-    <footer className="bg-white border-t border-gray-200">
+    <footer className="bg-white border-t bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="py-12">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {/* Brand Section */}
-            <div className="space-y-6">
-              <div className="flex items-center space-x-3">
+            <div className="space-y-9">
+              <div className="flex items-center space-x-6">
                 <img 
-                  src="/download.jpg" 
+                  src="/logo.jpg" 
                   alt="Dairy Farm Logo" 
-                  className="w-12 h-12 rounded-full"
+                  className="w-26 h-20 rounded-full"
                 />
                 <h2 className="text-2xl font-bold text-gray-800">
                 God’s Own Dairy
                 </h2>
               </div>
-              <p className="text-gray-600">
-                Providing quality dairy products since 1990. Our commitment to excellence 
-                and sustainable farming practices sets us apart.
+              <p className="text-gray-600  ">
+              ശുദ്ധം.വിശ്വസ്തം. സുരക്ഷിതം
               </p>
             </div>
 
@@ -98,29 +97,6 @@ const Footer = () => {
               <div className="mt-6">
                 <h4 className="text-sm font-semibold text-gray-800 mb-3">Subscribe to our Platforms</h4>
                 
-              </div>
-            </div>
-          </div>
-
-          {/* Bottom Section */}
-          <div className="mt-12 pt-8 border-t border-gray-200">
-            <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
-              <p className="text-sm text-gray-600">
-                © {new Date().getFullYear()} Dairy Farm, Vazhikadavu. All rights reserved.
-              </p>
-              <div className="flex space-x-8">
-                <a 
-                  href="" 
-                  className="text-sm text-gray-600 hover:text-gray-800 transition-colors hover:underline"
-                >
-                  Privacy Policy
-                </a>
-                <a 
-                  href="" 
-                  className="text-sm text-gray-600 hover:text-gray-800 transition-colors hover:underline"
-                >
-                  Terms of Service
-                </a>
               </div>
             </div>
           </div>

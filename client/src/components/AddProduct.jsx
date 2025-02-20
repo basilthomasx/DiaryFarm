@@ -7,13 +7,14 @@ const ProductManagement = () => {
   const [productData, setProductData] = useState({
     name: '',
     description: '',
-    image_url: '',
     stock_quantity: 0,
     rate: 0,
     is_milk_product: false,
     subscription_amount: 0,
     subscription_duration_days: 30
   });
+  const [selectedImage, setSelectedImage] = useState(null);
+  const [previewUrl, setPreviewUrl] = useState('');
 
   useEffect(() => {
     fetchProducts();
@@ -28,27 +29,54 @@ const ProductManagement = () => {
     }
   };
 
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setSelectedImage(file);
+      setPreviewUrl(URL.createObjectURL(file));
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    const formData = new FormData();
+    formData.append('name', productData.name);
+    formData.append('description', productData.description);
+    formData.append('stock_quantity', productData.stock_quantity);
+    formData.append('rate', productData.rate);
+    formData.append('is_milk_product', productData.is_milk_product);
+    formData.append('subscription_amount', productData.subscription_amount);
+    formData.append('subscription_duration_days', productData.subscription_duration_days);
+    
+    if (selectedImage) {
+      formData.append('image', selectedImage);
+    }
+
     try {
       if (editingProduct) {
-        await axios.put(`/api/products/${editingProduct.id}`, productData);
+        formData.append('current_image', editingProduct.image_url || '');
+        await axios.put(`/api/products/${editingProduct.id}`, formData, {
+          headers: { 'Content-Type': 'multipart/form-data' }
+        });
         setEditingProduct(null);
       } else {
-        await axios.post('/api/products', productData);
+        await axios.post('/api/products', formData, {
+          headers: { 'Content-Type': 'multipart/form-data' }
+        });
       }
       
       setProductData({
         name: '',
         description: '',
-        image_url: '',
         stock_quantity: 0,
         rate: 0,
         is_milk_product: false,
         subscription_amount: 0,
         subscription_duration_days: 30
       });
-      
+      setSelectedImage(null);
+      setPreviewUrl('');
       fetchProducts();
       alert(editingProduct ? 'Product Updated Successfully' : 'Product Added Successfully');
     } catch (error) {
@@ -61,25 +89,13 @@ const ProductManagement = () => {
     setProductData({
       name: product.name,
       description: product.description,
-      image_url: product.image_url,
       stock_quantity: product.stock_quantity,
       rate: product.rate,
       is_milk_product: product.is_milk_product,
       subscription_amount: product.subscription_amount || 0,
       subscription_duration_days: product.subscription_duration_days || 30
     });
-  };
-
-  const handleDelete = async (id) => {
-    if (window.confirm('Are you sure you want to delete this product?')) {
-      try {
-        await axios.delete(`/api/products/${id}`);
-        fetchProducts();
-        alert('Product deleted successfully');
-      } catch (error) {
-        console.error('Error deleting product:', error);
-      }
-    }
+    setPreviewUrl(product.image_url || '');
   };
 
   return (
@@ -94,6 +110,7 @@ const ProductManagement = () => {
             className="w-full p-2 border rounded"
             required
           />
+          
           <textarea
             placeholder="Description"
             value={productData.description}
@@ -101,13 +118,25 @@ const ProductManagement = () => {
             className="w-full p-2 border rounded"
             required
           />
-          <input
-            type="text"
-            placeholder="Image URL"
-            value={productData.image_url}
-            onChange={(e) => setProductData({...productData, image_url: e.target.value})}
-            className="w-full p-2 border rounded"
-          />
+
+          <div className="space-y-2">
+            <input
+              type="file"
+              accept="image/*"
+              onChange={handleImageChange}
+              className="w-full p-2 border rounded"
+            />
+            {previewUrl && (
+              <div className="mt-2">
+                <img 
+                  src={previewUrl} 
+                  alt="Preview" 
+                  className="max-w-xs h-auto rounded"
+                />
+              </div>
+            )}
+          </div>
+
           <input
             type="number"
             placeholder="Stock Quantity"
@@ -116,6 +145,7 @@ const ProductManagement = () => {
             className="w-full p-2 border rounded"
             required
           />
+
           <input
             type="number"
             placeholder="Rate"
@@ -168,6 +198,13 @@ const ProductManagement = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {products.map(product => (
           <div key={product.id} className="border rounded p-4">
+            {product.image_url && (
+              <img 
+                src={product.image_url} 
+                alt={product.name} 
+                className="w-full h-48 object-cover mb-2 rounded"
+              />
+            )}
             <h3 className="font-bold">{product.name}</h3>
             <p className="text-sm">{product.description}</p>
             <p>Stock: {product.stock_quantity}</p>

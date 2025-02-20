@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { 
-  ShoppingCart, 
   Package, 
   Loader2, 
   IndianRupee,
@@ -10,8 +9,18 @@ import {
   Info,
   Milk,
   AlertCircle,
-  Eye
+  Eye,
+  Award,
+  Star,
+  ShieldCheck
 } from "lucide-react";
+import Header from "./Header";
+
+const getImageUrl = (imageUrl) => {
+  if (!imageUrl) return '/placeholder-image.jpg';
+  if (imageUrl.startsWith('http')) return imageUrl;
+  return `http://localhost:3000${imageUrl}`;
+};
 
 const Badge = ({ children, variant = "default", className = "" }) => {
   const baseStyles = "inline-flex items-center rounded-full px-2.5 py-1 text-sm font-medium";
@@ -70,11 +79,47 @@ const ProductsListing = () => {
   }
 
   return (
-    <div className="container mx-auto p-6">
+    <div className="container mt-14 mx-auto p-9">
+      <Header/>
+      
+      <div className="mb-8 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-6 shadow-sm">
+        <div className="flex flex-col md:flex-row items-center justify-between">
+          <div className="flex-1">
+            <h2 className="text-2xl font-bold text-blue-800 mb-2">Premium Quality Products</h2>
+            <p className="text-gray-700 mb-4">
+              We pride ourselves on sourcing and delivering only the finest products, 
+              ensuring freshness and quality in every item. Our rigorous standards 
+              guarantee excellence with every purchase.
+            </p>
+            <div className="flex flex-wrap gap-4">
+              <div className="flex items-center gap-2">
+                <ShieldCheck className="w-5 h-5 text-green-600" />
+                <span className="text-sm font-medium">Quality Guaranteed</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Award className="w-5 h-5 text-amber-500" />
+                <span className="text-sm font-medium">Premium Selection</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Star className="w-5 h-5 text-yellow-500" />
+                <span className="text-sm font-medium">Top Rated Products</span>
+              </div>
+            </div>
+          </div>
+          <div className="mt-4 md:mt-0 ml-0 md:ml-6 flex-shrink-0">
+            <div className="bg-white p-3 rounded-full shadow-md">
+              <div className="bg-blue-100 p-4 rounded-full">
+                <Award className="w-16 h-16 text-blue-600" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
       <div className="flex items-center justify-between mb-8">
         <div className="flex items-center gap-3">
           <Package className="w-8 h-8 text-blue-500" />
-          <h1 className="text-3xl font-bold">Our Products</h1>
+          <h2 className="text-3xl font-bold">Our Products</h2>
         </div>
         <Badge variant="secondary" className="flex items-center gap-2 px-4 py-2">
           <Box className="w-4 h-4" />
@@ -87,9 +132,13 @@ const ProductsListing = () => {
           <div key={product.id} className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow">
             <div className="relative">
               <img 
-                src={product.image_url} 
+                src={getImageUrl(product.image_url)}
                 alt={product.name}
                 className="w-full h-48 object-cover rounded-t-lg"
+                onError={(e) => {
+                  e.target.src = '/placeholder-image.jpg';
+                  e.target.onerror = null;
+                }}
               />
               {product.is_milk_product && (
                 <div className="absolute top-2 right-2">
@@ -147,15 +196,13 @@ const ProductsListing = () => {
             </div>
             
             <div className="p-4 pt-0">
-            <button
-                className="flex items-center justify-center gap-2 bg-blue-500 hover:bg-blue-600 text-white py-3 px-4 rounded-md transition-colors"
+              <button
+                className="flex items-center justify-center gap-2 bg-blue-500 hover:bg-blue-600 text-white py-3 px-4 rounded-md transition-colors w-full"
                 onClick={() => navigate(`/product-details/${product.id}`)}
               >
                 <Eye className="w-5 h-5" />
                 View Details
               </button>
-              
-          
             </div>
           </div>
         ))}

@@ -22,6 +22,7 @@ app.use(express.urlencoded({extended: true }));
 
 
 
+
 const pool = new Pool({
    user: 'postgres',
     host: 'localhost',
@@ -880,7 +881,7 @@ app.post('/api/orders/create', async (req, res) => {
       ]
     );
 
-    // Update product stock
+    
     await client.query(
       'UPDATE products SET stock_quantity = stock_quantity - $1 WHERE id = $2',
       [req.body.quantity, product.id]
@@ -888,30 +889,30 @@ app.post('/api/orders/create', async (req, res) => {
 
     await client.query('COMMIT');
     
-    // Get order details for email
+   
     const orderId = orderResult.rows[0].id;
     
-    // Send confirmation email
+ 
     try {
       
      
       
-      // Create transporter (configure with your email service details)
+      
       const transporter = nodemailer.createTransport({
-        service: 'gmail', // or your preferred email service
+        service: 'gmail', 
         auth: {
           user: "dairytest03@gmail.com",
           pass: "dyxe okfd mkcc gawy"
         }
       });
       
-      // Prepare email content
+      
       const mailOptions = {
         from: "dairytest03@gmail.com",
         to: req.body.customer_email,
-        subject: `Order Confirmation #${orderId}`,
+        subject: `Order Confirmation ${orderId}`,
         html: `
-          <h1>Thank you for your order!</h1>
+          <h1>Thank you for your order,God’s Own Dairy!</h1>
           <p>Dear ${req.body.customer_name},</p>
           <p>We're pleased to confirm that your order has been received and is being processed.</p>
           <h2>Order Details:</h2>
@@ -1126,6 +1127,222 @@ app.put('/api/orders/:id/assign', async (req, res) => {
   } catch (err) {
       console.error('Error assigning staff:', err);
       res.status(500).json({ error: 'An error occurred while assigning staff' });
+  }
+});
+
+
+
+// Get milk quality data for a specific date
+app.get('/api/milk-quality/:date', async (req, res) => {
+  try {
+    const { date } = req.params;
+    const result = await pool.query(
+      'SELECT * FROM milk_quality WHERE date = $1',
+      [date]
+    );
+    
+    if (result.rows.length > 0) {
+      res.json(result.rows[0]);
+    } else {
+      res.json(null);
+    }
+  } catch (err) {
+    console.error('Error fetching milk quality data:', err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// Update milk quality data for a specific date (upsert)
+app.put('/api/milk-quality/:date', async (req, res) => {
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+    
+    const { date } = req.params;
+    const { fat, protein, lactose, snf, temperature, ph, remarks } = req.body;
+    
+    // Check if record exists for this date
+    const checkResult = await client.query(
+      'SELECT 1 FROM milk_quality WHERE date = $1',
+      [date]
+    );
+    
+    if (checkResult.rows.length > 0) {
+      // Update existing record
+      await client.query(
+        `UPDATE milk_quality 
+         SET fat = $1, protein = $2, lactose = $3, snf = $4, 
+             temperature = $5, ph = $6, remarks = $7, updated_at = CURRENT_TIMESTAMP
+         WHERE date = $8`,
+        [fat, protein, lactose, snf, temperature, ph, remarks, date]
+      );
+    } else {
+      // Insert new record
+      await client.query(
+        `INSERT INTO milk_quality 
+         (date, fat, protein, lactose, snf, temperature, ph, remarks)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
+        [date, fat, protein, lactose, snf, temperature, ph, remarks]
+      );
+    }
+    
+    await client.query('COMMIT');
+    res.status(200).json({ message: 'Milk quality data updated successfully' });
+  } catch (err) {
+    await client.query('ROLLBACK');
+    console.error('Error updating milk quality data:', err);
+    res.status(500).json({ error: 'Server error' });
+  } finally {
+    client.release();
+  }
+});
+
+
+
+
+// Get assigned orders for the logged-in staff member
+app.get('/api/staff/assigned-orders', async (req, res) => {
+  try {
+    // Assuming you have the staff's ID from authentication
+    const staffId = req.user.id; // Get this from your auth middleware
+    
+    const result = await pool.query(`
+      SELECT 
+        id, product_name, quantity, 
+        customer_name, customer_phone, customer_postal_code, 
+        customer_house_number, delivery_status, delivery_proof_url
+      FROM customer_orders 
+      WHERE assigned_to = $1
+      ORDER BY delivery_due_date ASC
+    `, [staffId]);
+    
+    res.json(result.rows);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Update delivery status
+app.put('/api/orders/:id/delivery-status', async (req, res) => {
+  const { id } = req.params;
+  const { deliveryStatus } = req.body;
+  const staffId = req.user.id; // Get this from your auth middleware
+  
+  try {
+    const result = await pool.query(
+      `UPDATE customer_orders 
+       SET delivery_status = $1, 
+           updated_at = CURRENT_TIMESTAMP
+       WHERE id = $2 AND assigned_to = $3
+       RETURNING *`,
+      [deliveryStatus, id, staffId]
+    );
+    
+    if (result.rowCount === 0) {
+      return res.status(404).json({ error: 'Order not found or not assigned to you' });
+    }
+    
+    res.json({ success: true });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Upload delivery proof
+app.post('/api/orders/:id/delivery-proof', upload.single('deliveryProof'), async (req, res) => {
+  const { id } = req.params;
+  const staffId = req.user.id; // Get this from your auth middleware
+  const file = req.file;
+  
+  if (!file) {
+    return res.status(400).json({ error: 'No file uploaded' });
+  }
+
+  const fileUrl = `/uploads/${file.filename}`;
+  
+  try {
+    const result = await pool.query(
+      `UPDATE customer_orders 
+       SET delivery_proof_url = $1, 
+           updated_at = CURRENT_TIMESTAMP
+       WHERE id = $2 AND assigned_to = $3
+       RETURNING *`,
+      [fileUrl, id, staffId]
+    );
+    
+    if (result.rowCount === 0) {
+      return res.status(404).json({ error: 'Order not found or not assigned to you' });
+    }
+    
+    res.json({ success: true, fileUrl });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.post('/api/callback-requests', async (req, res) => {
+  try {
+      const { name, phone } = req.body;
+
+      // Validate phone number
+      if (!/^\d{10}$/.test(phone)) {
+          return res.status(400).json({ error: 'Phone number must be exactly 10 digits' });
+      }
+
+      const result = await pool.query(
+          'INSERT INTO callback_requests (name, phone) VALUES ($1, $2) RETURNING *',
+          [name, phone]
+      );
+
+      res.status(201).json(result.rows[0]);
+  } catch (error) {
+      console.error('Error submitting callback request:', error);
+      res.status(500).json({ error: 'Failed to submit callback request' });
+  }
+});
+
+// Get all callback requests
+app.get('/api/callback-requests', async (req, res) => {
+  try {
+      const result = await pool.query(
+          `SELECT id, name, phone, requested_at, status 
+           FROM callback_requests 
+           ORDER BY CASE 
+              WHEN status = 'pending' THEN 0 
+              ELSE 1 
+           END, requested_at DESC`
+      );
+
+      res.json(result.rows);
+  } catch (error) {
+      console.error('Error fetching callback requests:', error);
+      res.status(500).json({ error: 'Failed to fetch callback requests' });
+  }
+});
+
+// Update callback request status
+app.put('/api/callback-requests/:id/status', async (req, res) => {
+  try {
+      const { id } = req.params;
+      const { status } = req.body;
+
+      if (!['pending', 'completed'].includes(status)) {
+          return res.status(400).json({ error: 'Invalid status' });
+      }
+
+      const result = await pool.query(
+          'UPDATE callback_requests SET status = $1 WHERE id = $2 RETURNING *',
+          [status, id]
+      );
+
+      if (result.rows.length === 0) {
+          return res.status(404).json({ error: 'Callback request not found' });
+      }
+
+      res.json(result.rows[0]);
+  } catch (error) {
+      console.error('Error updating callback request:', error);
+      res.status(500).json({ error: 'Failed to update callback request' });
   }
 });
 // Start the server

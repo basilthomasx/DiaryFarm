@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Header from './Header';
 import Footer from './Footer';
+import axios from 'axios'; // Assuming you're using axios - you can replace with fetch if needed
 import { 
   Milk, 
   ClipboardCheck, 
@@ -15,10 +16,36 @@ import {
   ChevronLeft
 } from 'lucide-react';
 
+// Date formatting function
+const formatDate = (dateString) => {
+  const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+  return new Date(dateString).toLocaleDateString('en-US', options);
+};
+
+
+
+// Authentication util
+const isAuthenticated = () => {
+  return localStorage.getItem('token') !== null;
+};
+
+// Get user data from local storage
+const getUserData = () => {
+  const userData = localStorage.getItem('userData');
+  return userData ? JSON.parse(userData) : null;
+};
+
+
+const API_BASE_URL = 'http://localhost:3000';
+
 const StageSlider = ({ slides }) => {
+  // StageSlider component remains unchanged
   const [currentIndex, setCurrentIndex] = React.useState(0);
   const [isAnimating, setIsAnimating] = React.useState(false);
   const [direction, setDirection] = React.useState('right');
+
+
+ 
 
   React.useEffect(() => {
     const interval = setInterval(() => {
@@ -41,7 +68,9 @@ const StageSlider = ({ slides }) => {
       return prev === 0 ? slides.length - 1 : prev - 1;
     });
     setTimeout(() => setIsAnimating(false), 500);
+
   };
+  
 
   return (
     <div className="relative max-w-6xl mx-auto mb-24">
@@ -127,42 +156,113 @@ const StageSlider = ({ slides }) => {
 };
 
 function Home() {
+  // Authentication state
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [userData, setUserData] = useState(null);
+  
+  // Data state
+  const [todayData, setTodayData] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
+  
+  const date = new Date().toISOString().split('T')[0]; // Today's date in YYYY-MM-DD format
+  
+  // Check authentication on component mount
+  useEffect(() => {
+    const checkAuth = () => {
+      const authenticated = isAuthenticated();
+      setIsLoggedIn(authenticated);
+      
+      if (authenticated) {
+        const user = getUserData();
+        setUserData(user);
+      }
+    };
+    
+    checkAuth();
+    
+    // Listen for storage events (for logout in other tabs)
+    window.addEventListener('storage', checkAuth);
+    return () => window.removeEventListener('storage', checkAuth);
+  }, []);
+  
+  // Fetch milk quality data when authenticated
+  useEffect(() => {
+    const fetchMilkQualityData = async () => {
+      if (!isLoggedIn) return;
+      
+      setIsLoading(true);
+      setError(null);
+      
+      try {
+        // Get the authentication token
+        const token = localStorage.getItem('token');
+        
+        // Set up the request with the auth token
+        const config = {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        };
+        
+        // Make the API request
+        const response = await axios.get(`${API_BASE_URL}/api/milk-quality/${date}`, config);
+        
+        // Update state with fetched data
+        setTodayData(response.data);
+      } catch (err) {
+        console.error('Error fetching milk quality data:', err);
+        setError('Failed to load milk quality data. Please try again later.');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    fetchMilkQualityData();
+  }, [isLoggedIn, date]);
+
   const slides = [
+    {
+      icon: <Milk size={32} className="font-bold text-emerald-600" />,
+      image: "/info.jpg",
+      alt: "Cow eating grass",
+      title: " പാലിന്റെ മേന്മ, നാടിന്റെ നന്മ."
+    },
     {
       icon: <Milk size={32} className="font-bold text-emerald-600" />,
       image: "/healthycows.jpg",
       alt: "Cow eating grass",
-      title: "ആരോഗ്യമുള്ള കന്നുകാലികളിൽ നിന്നുള്ള പാൽ ശേഖരണം"
+      title: " ആരോഗ്യമുള്ള കന്നുകാലികളിൽ നിന്നുള്ള പാൽ ശേഖരണം"
     },
     {
       icon: <ClipboardCheck size={32} className="font-bold text-teal-600" />,
-      image: "/milk Analyzer.jpg",
+      image: "/testing.jpg",
       alt: "Quality Test",
-      title: "പാൽ ഗുണനിലവാര പരിശോധന"
+      title: " പാൽ ഗുണനിലവാര പരിശോധന"
     },
     {
       icon: <Truck size={32} className="font-bold text-emerald-600" />,
       image: "/delivery.jpg",
       alt: "Delivery",
-      title: "ഡെലിവറി രാവിലെ 6 മണി മുതൽ ആരംഭിക്കുന്നു"
+      title: " ഡെലിവറി രാവിലെ 6 മണി മുതൽ ആരംഭിക്കുന്നു"
     },
     {
       icon: <Syringe size={32} className="font-bold text-teal-600" />,
-      image: "/vaxination.jpg",
+      image: "/cowvaxination.jpg",
       alt: "Vaccination",
-      title: "കന്നുകാലികൾക്ക് വാക്സിനേഷനും ആരോഗ്യവും ഉറപ്പാക്കുന്നു"
+      title: " കന്നുകാലികൾക്ക് വാക്സിനേഷനും ആരോഗ്യവും ഉറപ്പാക്കുന്നു"
     },
     {
       icon: <Calendar size={32} className="font-bold text-emerald-600" />,
       image: "/Subscribtion.jpg",
       alt: "Subscription",
-      title: "പാലിനുള്ള പ്രതിമാസ സബ്‌സ്‌ക്രിപ്‌ഷനുകൾ ലഭ്യമാണ്"
+      title: " പാലിനുള്ള പ്രതിമാസ സബ്‌സ്‌ക്രിപ്‌ഷനുകൾ ലഭ്യമാണ്"
     },
     {
       icon: <MapPin size={32} className="font-bold text-teal-600" />,
-      image: "/location.jpg",
+      image: "/locationf1.jpg",
       alt: "location",
-      title: "ഇപ്പോൾ ഡെലിവറി പാതിരിപ്പാടം പ്രദേശത്ത് മാത്രം"
+      title: " ഇപ്പോൾ ഡെലിവറി പാതിരിപ്പാടം പ്രദേശത്ത് മാത്രം"
     }
   ];
 
@@ -179,7 +279,7 @@ function Home() {
                 Welcome to God's Own Dairy
               </h2>
               <p className="text-2xl font-bold text-emerald-700 leading-relaxed">
-                ടെക്നോളജിയുടെ സ്പർശം, പ്രകൃതിയുടെ ശുദ്ധി!
+              ശുദ്ധം. വിശ്വസ്തം. സുരക്ഷിതം!
               </p>
             </div>
           </div>
@@ -187,14 +287,80 @@ function Home() {
           <main className="relative mt-32 p-8 space-y-24">
             <StageSlider slides={slides} />
 
-            <div className="max-w-3xl mx-auto py-12">
-              <div className="relative overflow-hidden rounded-2xl">
-                <div className="absolute inset-0 bg-gradient-to-r from-emerald-100/50 to-teal-100/50 backdrop-blur-[3px]"></div>
-                <p className="relative font-bold text-green-700 text-2xl text-center leading-relaxed p-8 bg-green/60">
-                  ഈ പ്ലാറ്റ്‌ഫോം ഉപഭോക്താക്കൾക്ക് സ്ഥിരത മെച്ചപ്പെടുത്തുന്നതിന് ഓരോ കർഷകനും അവരുടെ വിളവ് ഉൽപ്പന്നങ്ങൾ വാങ്ങാനും വിൽക്കാനും കഴിയും. ഇത് ഉടൻ ലഭ്യമാകും.
-                </p>
+            {isLoggedIn ? (
+              <div className="max-w-3xl mx-auto py-12">
+                {/* Removed the blur effect wrapper div */}
+                <div className="mb-8 bg-white shadow-lg rounded-lg overflow-hidden">
+                  {/* Today's Milk Quality Display Section */}
+                  <div className="p-6">
+                    <h2 className="text-xl font-semibold mb-4 text-center">Today's Milk Quality</h2>
+                    
+                    {isLoading ? (
+                      <div className="text-center py-8">
+                        <p className="text-gray-600">Loading milk quality data...</p>
+                      </div>
+                    ) : error ? (
+                      <div className="text-center py-6 text-red-500">
+                        <p>{error}</p>
+                      </div>
+                    ) : todayData ? (
+                      <div>
+                        <div className="text-center mb-2 text-gray-600">
+                          <span className="font-medium">{formatDate(date)}</span>
+                        </div>
+                        
+                        <div className="grid grid-cols-3 gap-4 mb-4">
+                          <div className="bg-blue-50 rounded p-3 text-center hover:shadow-md transition-shadow">
+                            <div className="text-sm text-gray-500">Fat</div>
+                            <div className="text-xl font-semibold">{todayData.fat}%</div>
+                          </div>
+                          <div className="bg-green-50 rounded p-3 text-center hover:shadow-md transition-shadow">
+                            <div className="text-sm text-gray-500">Protein</div>
+                            <div className="text-xl font-semibold">{todayData.protein}%</div>
+                          </div>
+                          <div className="bg-purple-50 rounded p-3 text-center hover:shadow-md transition-shadow">
+                            <div className="text-sm text-gray-500">Lactose</div>
+                            <div className="text-xl font-semibold">{todayData.lactose}%</div>
+                          </div>
+                          <div className="bg-yellow-50 rounded p-3 text-center hover:shadow-md transition-shadow">
+                            <div className="text-sm text-gray-500">SNF</div>
+                            <div className="text-xl font-semibold">{todayData.snf}%</div>
+                          </div>
+                          <div className="bg-red-50 rounded p-3 text-center hover:shadow-md transition-shadow">
+                            <div className="text-sm text-gray-500">Temperature</div>
+                            <div className="text-xl font-semibold">{todayData.temperature}°C</div>
+                          </div>
+                          <div className="bg-indigo-50 rounded p-3 text-center hover:shadow-md transition-shadow">
+                            <div className="text-sm text-gray-500">pH Level</div>
+                            <div className="text-xl font-semibold">{todayData.ph}</div>
+                          </div>
+                        </div>
+                        
+                        {todayData.remarks && (
+                          <div className="mt-3 p-3 bg-gray-50 rounded">
+                            <div className="text-sm text-gray-500 mb-1">Remarks:</div>
+                            <div className="text-gray-700">{todayData.remarks}</div>
+                          </div>
+                        )}
+                      </div>
+                    ) : (
+                      <div className="text-center py-6 text-gray-500">
+                        No milk quality data recorded for today.
+                      </div>
+                    )}
+                  </div>
+                </div>
               </div>
-            </div>
+            ) : (
+              <div className="max-w-3xl mx-auto py-12">
+                <div className="relative overflow-hidden rounded-2xl">
+                  <div className="absolute inset-0 bg-gradient-to-r from-emerald-100/50 to-teal-100/50 backdrop-blur-[3px]"></div>
+                  <p className="relative font-bold text-green-700 text-2xl text-center leading-relaxed p-8 bg-green/60">
+                  "Quality milk plays a vital role in daily life, providing essential nutrients for growth, strength, and overall well-being."
+                  </p>
+                </div>
+              </div>
+            )}
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-8">
               {[
@@ -235,9 +401,7 @@ function Home() {
                 <div className="relative p-8 bg-white/70">
                   <h2 className="text-3xl font-bold text-emerald-800 mb-6">Product Information</h2>
                   <p className="text-gray-700 leading-relaxed text-lg">
-                    Our products are carefully selected to ensure the highest quality and freshness. 
-                    We work directly with local farmers to bring you the best seasonal produce and 
-                    dairy products, maintaining strict quality control throughout our supply chain.
+                  "Our cattle farm products are carefully produced to ensure freshness, quality, and sustainability, supporting both healthy living and local communities."
                   </p>
                 </div>
               </div>

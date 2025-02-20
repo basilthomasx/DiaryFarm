@@ -8,6 +8,7 @@ import {
   SunIcon,
   MilkIcon
 } from 'lucide-react';
+import Footer from './Footer';
 
 const About = () => {
   const values = [
@@ -30,24 +31,26 @@ const About = () => {
 
   const timeline = [
     {
-      year: "2024",
-      title: "Our Beginning",
-      description: "Three young innovators take the first step toward revolutionizing agriculture with their groundbreaking idea.."
-    },
-    {
       year: "2025",
       title: "Modernization",
       description: "Introduced the first fresh milk selling platform."
     },
     {
-      year: "2018",
-      title: "Organic Transition",
-      description: "Our farm has been collaborating with Milma for the past six years."
+      year: "2024",
+      title: "Our Beginning",
+      description: "Three young innovators take the first step toward revolutionizing agriculture with their groundbreaking idea.."
+     
     },
     {
       year: "2022",
       title: "Innovation",
       description: "Implemented a solar power farm with government support."
+    },
+    {
+      year: "2018",
+      title: "Organic Transition",
+      description: "Our farm has been collaborating with Milma for the past six years."
+      
     }
   ];
 
@@ -57,16 +60,16 @@ const About = () => {
       {/* Hero Section */}
       <div className="relative h-96">
         <img
-          src="/api/placeholder/1920/600"
+          src=""
           alt="Dairy Farm Hero"
           className="w-full h-full object-cover"
         />
-        <div className="absolute inset-0 bg-green-500 flex items-center justify-center">
+        <div className="absolute inset-2 bg-blue-500 opacity-0.5  flex items-center justify-center">
           <div className="text-center text-white px-4">
             <h1 className="text-5xl font-bold mb-4">God's Own Dairy</h1>
             <p className="text-xl max-w-2xl mx-auto">
-            ടെക്നോളജിയുടെ സ്പർശം, പ്രകൃതിയുടെ ശുദ്ധി! 
-            Since 2018
+            ശുദ്ധം. വിശ്വസ്തം. സുരക്ഷിതം! 
+            
             </p>
           </div>
         </div>
@@ -80,17 +83,18 @@ const About = () => {
           <div className="grid md:grid-cols-2 gap-8 items-center">
             <div>
               <img
-                src="/healthycows.jpg"
+                src="/main.jpg"
                 alt="Farm History"
                 className="rounded-lg shadow-lg"
               />
             </div>
             <div className="space-y-4">
               <p className="text-lg font-bold text-gray-700">
-              Our vision is to inspire interest in farming and promote the growth of agricultural products.
+              Our vision is to inspire interest in farming and promote the growth of Dairy products.
               </p>
               <p className="text-lg font-bold text-gray-700">
               We are currently implementing our vision of merging farming with technology to create diverse opportunities in the agricultural sector.
+              Our aim is to provide pure milk to the future generation.
               </p>
             </div>
           </div>
@@ -157,7 +161,9 @@ const About = () => {
           </div>
         </div>
       </div>
+      <Footer/>
     </div>
+    
   );
 };
 

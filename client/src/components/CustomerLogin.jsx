@@ -34,7 +34,7 @@ const CustomerLogin = () => {
       }
     
       localStorage.setItem('token', data.token);
-      window.location.href = '/products';
+      window.location.href = '/';
       
     } catch (error) {
       setError(error.message || 'An error occurred during login');
