@@ -129,22 +129,43 @@ const ProductsListing = () => {
       
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {products.map(product => (
-          <div key={product.id} className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow">
-            <div className="relative">
+          <div key={product.id} className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300">
+            <div className="relative overflow-hidden rounded-t-lg group">
               <img 
                 src={getImageUrl(product.image_url)}
                 alt={product.name}
-                className="w-full h-48 object-cover rounded-t-lg"
+                className="w-full h-56 object-cover rounded-t-lg transition-transform duration-500 group-hover:scale-110"
                 onError={(e) => {
                   e.target.src = '/placeholder-image.jpg';
                   e.target.onerror = null;
                 }}
               />
+              {/* Overlay that appears on hover */}
+              <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end justify-center">
+                <button
+                  className="mb-4 transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300 bg-white/90 hover:bg-blue-500 hover:text-white text-blue-700 font-medium py-2 px-4 rounded-md flex items-center gap-2"
+                  onClick={() => navigate(`/product-details/${product.id}`)}
+                >
+                  <Eye className="w-5 h-5" />
+                  View Details
+                </button>
+              </div>
+              
               {product.is_milk_product && (
                 <div className="absolute top-2 right-2">
                   <Badge variant="blue" className="flex items-center gap-2">
                     <Milk className="w-4 h-4" />
                     Subscription
+                  </Badge>
+                </div>
+              )}
+              
+              {/* Optional: Add a discount tag or featured tag for some products */}
+              {product.id % 3 === 0 && (
+                <div className="absolute top-2 left-2">
+                  <Badge variant="success" className="flex items-center gap-2">
+                    <Star className="w-4 h-4" />
+                    Featured
                   </Badge>
                 </div>
               )}
@@ -197,7 +218,7 @@ const ProductsListing = () => {
             
             <div className="p-4 pt-0">
               <button
-                className="flex items-center justify-center gap-2 bg-blue-500 hover:bg-blue-600 text-white py-3 px-4 rounded-md transition-colors w-full"
+                className="flex items-center justify-center gap-2 bg-blue-500 hover:bg-blue-600 text-white py-3 px-4 rounded-md transition-colors w-full hover:shadow-md duration-300"
                 onClick={() => navigate(`/product-details/${product.id}`)}
               >
                 <Eye className="w-5 h-5" />

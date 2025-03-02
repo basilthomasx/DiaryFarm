@@ -17,9 +17,10 @@ import OrderDetails from './components/OrderDetails';
 import OrdersList from './components/OrderList';
 import HelpAndSupport from './components/HelpAndSupport';
 import MilkQualityUpdate from './components/MilkQualityUpdate';
-import StaffDeliveryManagement from './components/StaffDeliveryManagement';
 import AdminHeader from './components/AdminHeader';
-import BackButton from './components/BackButton';
+import DeliveryDetails from './components/DeliveryDetails';
+import DeliveryList from './components/DeliveryList';
+import StaffDashboard from './components/StaffDashboard'
 // import PasswordResetForm from './components/PasswordResetForm';
 
 
@@ -47,9 +48,13 @@ const App = () => {
             <Route path="/orders/:id" element={<OrderDetails />} />
             <Route path="/help/and/support" element={<HelpAndSupport />} />
             <Route path="/admin/milk-quality" element={<MilkQualityUpdate />} />
-            <Route path="/staff/delivery-management" element={<StaffDeliveryManagement />} />
             <Route path="/admin/header" element={<AdminHeader/>} />
-            <Route path="back/button" element={<BackButton/>} />
+           
+
+            <Route path="/staff/dashboard" element={<StaffDashboard />} />
+            <Route path="/staff/deliveries/:status" element={<DeliveryList />} />
+            <Route path="/staff/delivery/:id" element={<DeliveryDetails />} />
+          
         </Routes>
         
       </main>

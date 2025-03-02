@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import axios from 'axios';
+import AdminHeader from './AdminHeader';
 
 const API_URL = 'http://localhost:3000/api';
 
@@ -71,6 +72,7 @@ const OrderDetails = () => {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-screen">
+        
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
         <span className="ml-3 text-gray-600">Loading order details...</span>
       </div>

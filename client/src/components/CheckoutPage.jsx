@@ -23,7 +23,7 @@ import {
   CheckCircle
 } from 'lucide-react';
 import Header from './Header';
-import BackButton from './BackButton';
+
 
 // Alert Modal Component
 const AlertModal = ({ isOpen, onClose, title, message, type = 'success' }) => {
@@ -318,17 +318,23 @@ const CheckoutPage = () => {
     <div className="min-h-screen bg-gray-50">
       <div className="min-h-screen mx-auto grid grid-cols-1 md:grid-cols-3 gap-11 p-11">
         <Header/>
-        {/* <BackButton/> */}
+        
         <div className="md:col-span-5">
-        <BackButton/>
+          <div className="flex items-center gap-4 mb-6">
+            <button 
+              onClick={() => navigate(-1)} 
+              className="flex items-center gap-2 text-blue-600 hover:text-blue-800 transition-colors"
+            >
+              <ArrowLeft className="w-5 h-5" />
+              <span>Back to product details</span>
+            </button>
+          </div>
+          
           <h1 className="text-3xl font-bold text-gray-800 mb-8 flex items-center gap-3">
-            
             <ShoppingBag className="w-8 h-8 text-blue-500" />
-            
             Checkout
           </h1>
         </div>
-
         {/* Main Form Section */}
         <div className="md:col-span-2 bg-white rounded-xl shadow-md p-8">
           <h2 className="text-xl font-semibold mb-6 text-gray-800">Customer Information</h2>
@@ -406,7 +412,7 @@ const CheckoutPage = () => {
                     onChange={handleChange}
                     className="w-full pl-10 pr-10 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 appearance-none bg-white cursor-pointer"
                   >
-                    <option value="679333">679333 - Vazhikadavu, Kerala</option>
+                    <option value="679333">679333 - Pathiripadam, Kerala</option>
                   </select>
                   <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
                     <ChevronDown className="w-5 h-5 text-gray-400" />
@@ -469,8 +475,8 @@ const CheckoutPage = () => {
                     onChange={handleChange}
                     className="w-full pl-10 pr-10 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 appearance-none bg-white cursor-pointer"
                   >
-                    <option value="morning">Morning (7:00 AM - 10:00 AM)</option>
-                    <option value="evening">Evening (3:00 PM - 6:00 PM)</option>
+                    <option value="morning">Morning (6:00 AM - 7:00 AM)</option>
+                    <option value="evening">Evening (2:30 PM - 4:00 PM)</option>
                   </select>
                   <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
                     <ChevronDown className="w-5 h-5 text-gray-400" />

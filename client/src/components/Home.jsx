@@ -13,7 +13,17 @@ import {
   Workflow,
   Users,
   ChevronRight,
-  ChevronLeft
+  ChevronLeft,
+  ArrowLeft, 
+  Droplet, 
+  Thermometer, 
+  CircleAlert,
+  BarChart, 
+  Beaker, 
+  ClipboardList,
+  Info,
+  AlertCircle,
+  Loader
 } from 'lucide-react';
 
 // Date formatting function
@@ -21,8 +31,6 @@ const formatDate = (dateString) => {
   const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
   return new Date(dateString).toLocaleDateString('en-US', options);
 };
-
-
 
 // Authentication util
 const isAuthenticated = () => {
@@ -35,6 +43,54 @@ const getUserData = () => {
   return userData ? JSON.parse(userData) : null;
 };
 
+// Add the missing getQualityColor function
+const getQualityColor = (parameter, value) => {
+  // Define quality ranges for each parameter
+  const ranges = {
+    fat: { low: 3.0, high: 5.0 },
+    protein: { low: 3.0, high: 4.0 },
+    lactose: { low: 4.0, high: 5.0 },
+    snf: { low: 8.0, high: 9.5 },
+    temperature: { low: 2.0, high: 8.0 },
+    ph: { low: 6.5, high: 6.8 }
+  };
+
+  // Default to gray if parameter not found
+  if (!ranges[parameter]) {
+    return "bg-gray-100";
+  }
+
+  const { low, high } = ranges[parameter];
+  
+  // Temperature has a different logic (we want cool milk)
+  if (parameter === 'temperature') {
+    if (value <= high && value >= low) {
+      return "bg-green-100";
+    } else if (value > high && value <= high + 2) {
+      return "bg-yellow-100";
+    } else {
+      return "bg-red-100";
+    }
+  }
+  
+  // pH has a narrow acceptable range
+  if (parameter === 'ph') {
+    if (value >= low && value <= high) {
+      return "bg-green-100";
+    } else {
+      return "bg-red-100";
+    }
+  }
+  
+  // For most parameters, higher values are generally better up to a point
+  if (value < low) {
+    return "bg-red-100";
+  } else if (value >= low && value <= high) {
+    return "bg-green-100";
+  } else {
+    return "bg-yellow-100"; // Values above high range
+  }
+};
 
 const API_BASE_URL = 'http://localhost:3000';
 
@@ -43,9 +99,6 @@ const StageSlider = ({ slides }) => {
   const [currentIndex, setCurrentIndex] = React.useState(0);
   const [isAnimating, setIsAnimating] = React.useState(false);
   const [direction, setDirection] = React.useState('right');
-
-
- 
 
   React.useEffect(() => {
     const interval = setInterval(() => {
@@ -68,10 +121,8 @@ const StageSlider = ({ slides }) => {
       return prev === 0 ? slides.length - 1 : prev - 1;
     });
     setTimeout(() => setIsAnimating(false), 500);
-
   };
   
-
   return (
     <div className="relative max-w-6xl mx-auto mb-24">
       <div className="flex gap-4">
@@ -224,7 +275,7 @@ function Home() {
   const slides = [
     {
       icon: <Milk size={32} className="font-bold text-emerald-600" />,
-      image: "/info.jpg",
+      image: "/milma.jpeg",
       alt: "Cow eating grass",
       title: " പാലിന്റെ മേന്മ, നാടിന്റെ നന്മ."
     },
@@ -251,12 +302,6 @@ function Home() {
       image: "/cowvaxination.jpg",
       alt: "Vaccination",
       title: " കന്നുകാലികൾക്ക് വാക്സിനേഷനും ആരോഗ്യവും ഉറപ്പാക്കുന്നു"
-    },
-    {
-      icon: <Calendar size={32} className="font-bold text-emerald-600" />,
-      image: "/Subscribtion.jpg",
-      alt: "Subscription",
-      title: " പാലിനുള്ള പ്രതിമാസ സബ്‌സ്‌ക്രിപ്‌ഷനുകൾ ലഭ്യമാണ്"
     },
     {
       icon: <MapPin size={32} className="font-bold text-teal-600" />,
@@ -286,73 +331,121 @@ function Home() {
 
           <main className="relative mt-32 p-8 space-y-24">
             <StageSlider slides={slides} />
+            
 
             {isLoggedIn ? (
-              <div className="max-w-3xl mx-auto py-12">
-                {/* Removed the blur effect wrapper div */}
-                <div className="mb-8 bg-white shadow-lg rounded-lg overflow-hidden">
-                  {/* Today's Milk Quality Display Section */}
-                  <div className="p-6">
-                    <h2 className="text-xl font-semibold mb-4 text-center">Today's Milk Quality</h2>
+              <div className="p-4 bg-gray-50 min-h-screen flex items-center">
+  <div className="max-w-4xl mx-auto w-full">
+                 
+              
+                  <div className="bg-white rounded-xl shadow-lg overflow-hidden mb-8">
+                    <div className="p-7 border-b border-gray-100">
+                      <h1 className="text-3xl font-bold text-gray-800">Milk Quality </h1>
+                      
+                    </div>
                     
-                    {isLoading ? (
-                      <div className="text-center py-8">
-                        <p className="text-gray-600">Loading milk quality data...</p>
-                      </div>
-                    ) : error ? (
-                      <div className="text-center py-6 text-red-500">
-                        <p>{error}</p>
-                      </div>
-                    ) : todayData ? (
-                      <div>
-                        <div className="text-center mb-2 text-gray-600">
-                          <span className="font-medium">{formatDate(date)}</span>
+                    {/* Today's Milk Quality Display Section */}
+                    <div className="p-6">
+                      <h2 className="text-xl font-semibold mb-4 flex items-center">
+                        <ClipboardList className="w-5 h-5 mr-2 text-blue-500" />
+                        Today's Milk Quality
+                      </h2>
+                      
+                      {isLoading ? (
+                        <div className="text-center py-10 px-4 bg-gray-50 rounded-lg flex flex-col items-center">
+                          <Loader className="w-8 h-8 text-blue-500 mb-3 animate-spin" />
+                          <p className="text-gray-600">Loading milk quality data...</p>
                         </div>
-                        
-                        <div className="grid grid-cols-3 gap-4 mb-4">
-                          <div className="bg-blue-50 rounded p-3 text-center hover:shadow-md transition-shadow">
-                            <div className="text-sm text-gray-500">Fat</div>
-                            <div className="text-xl font-semibold">{todayData.fat}%</div>
-                          </div>
-                          <div className="bg-green-50 rounded p-3 text-center hover:shadow-md transition-shadow">
-                            <div className="text-sm text-gray-500">Protein</div>
-                            <div className="text-xl font-semibold">{todayData.protein}%</div>
-                          </div>
-                          <div className="bg-purple-50 rounded p-3 text-center hover:shadow-md transition-shadow">
-                            <div className="text-sm text-gray-500">Lactose</div>
-                            <div className="text-xl font-semibold">{todayData.lactose}%</div>
-                          </div>
-                          <div className="bg-yellow-50 rounded p-3 text-center hover:shadow-md transition-shadow">
-                            <div className="text-sm text-gray-500">SNF</div>
-                            <div className="text-xl font-semibold">{todayData.snf}%</div>
-                          </div>
-                          <div className="bg-red-50 rounded p-3 text-center hover:shadow-md transition-shadow">
-                            <div className="text-sm text-gray-500">Temperature</div>
-                            <div className="text-xl font-semibold">{todayData.temperature}°C</div>
-                          </div>
-                          <div className="bg-indigo-50 rounded p-3 text-center hover:shadow-md transition-shadow">
-                            <div className="text-sm text-gray-500">pH Level</div>
-                            <div className="text-xl font-semibold">{todayData.ph}</div>
-                          </div>
+                      ) : error ? (
+                        <div className="text-center py-10 px-4 bg-red-50 rounded-lg border border-red-100 flex flex-col items-center">
+                          <AlertCircle className="w-8 h-8 text-red-500 mb-3" />
+                          <p className="text-red-600">{error}</p>
                         </div>
-                        
-                        {todayData.remarks && (
-                          <div className="mt-3 p-3 bg-gray-50 rounded">
-                            <div className="text-sm text-gray-500 mb-1">Remarks:</div>
-                            <div className="text-gray-700">{todayData.remarks}</div>
+                      ) : todayData ? (
+                        <div>
+                          <div className="text-center mb-4 text-gray-600 flex justify-center items-center">
+                            <Info className="w-4 h-4 mr-2 text-blue-500" />
+                            <span className="font-medium">{formatDate(date)}</span>
                           </div>
-                        )}
-                      </div>
-                    ) : (
-                      <div className="text-center py-6 text-gray-500">
-                        No milk quality data recorded for today.
-                      </div>
-                    )}
+                          
+                          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                            <div className={`${getQualityColor('fat', todayData.fat)} rounded-lg p-4 transition-all duration-200 hover:shadow-md`}>
+                              <div className="flex items-center justify-between mb-2">
+                                <div className="text-sm font-medium text-gray-700">Fat</div>
+                                <Droplet className="w-5 h-5 text-blue-500" />
+                              </div>
+                              <div className="text-2xl font-bold text-gray-800">{todayData.fat}%</div>
+                            </div>
+                            
+                            <div className={`${getQualityColor('protein', todayData.protein)} rounded-lg p-4 transition-all duration-200 hover:shadow-md`}>
+                              <div className="flex items-center justify-between mb-2">
+                                <div className="text-sm font-medium text-gray-700">Protein</div>
+                                <BarChart className="w-5 h-5 text-green-500" />
+                              </div>
+                              <div className="text-2xl font-bold text-gray-800">{todayData.protein}%</div>
+                            </div>
+                            
+                            <div className={`${getQualityColor('lactose', todayData.lactose)} rounded-lg p-4 transition-all duration-200 hover:shadow-md`}>
+                              <div className="flex items-center justify-between mb-2">
+                                <div className="text-sm font-medium text-gray-700">Lactose</div>
+                                <Beaker className="w-5 h-5 text-purple-500" />
+                              </div>
+                              <div className="text-2xl font-bold text-gray-800">{todayData.lactose}%</div>
+                            </div>
+                            
+                            <div className={`${getQualityColor('snf', todayData.snf)} rounded-lg p-4 transition-all duration-200 hover:shadow-md`}>
+                              <div className="flex items-center justify-between mb-2">
+                                <div className="text-sm font-medium text-gray-700">SNF</div>
+                                <BarChart className="w-5 h-5 text-yellow-500" />
+                              </div>
+                              <div className="text-2xl font-bold text-gray-800">{todayData.snf}%</div>
+                            </div>
+                            
+                            <div className={`${getQualityColor('temperature', todayData.temperature)} rounded-lg p-4 transition-all duration-200 hover:shadow-md`}>
+                              <div className="flex items-center justify-between mb-2">
+                                <div className="text-sm font-medium text-gray-700">Temperature</div>
+                                <Thermometer className="w-5 h-5 text-red-500" />
+                              </div>
+                              <div className="text-2xl font-bold text-gray-800">{todayData.temperature}°C</div>
+                            </div>
+                            
+                            <div className={`${getQualityColor('ph', todayData.ph)} rounded-lg p-4 transition-all duration-200 hover:shadow-md`}>
+                              <div className="flex items-center justify-between mb-2">
+                                <div className="text-sm font-medium text-gray-700">pH Level</div>
+                                <CircleAlert className="w-5 h-5 text-indigo-500" />
+                              </div>
+                              <div className="text-2xl font-bold text-gray-800">{todayData.ph}</div>
+                            </div>
+                          </div>
+                          
+                          {todayData.remarks && (
+                            <div className="mt-4 p-4 bg-gray-50 rounded-lg border border-gray-100">
+                              <div className="flex items-center mb-2 text-gray-700">
+                                <ClipboardList className="w-4 h-4 mr-2" />
+                                <span className="font-medium">Remarks:</span>
+                              </div>
+                              <div className="text-gray-700">{todayData.remarks}</div>
+                            </div>
+                          )}
+                        </div>
+                      ) : (
+                        <div className="text-center py-10 px-4 bg-gray-50 rounded-lg flex flex-col items-center">
+                          <Info className="w-8 h-8 text-blue-500 mb-3" />
+                          <div className="text-gray-500 mb-2">No milk quality data recorded for today.</div>
+                          {date === new Date().toISOString().split('T')[0] && 
+                            <div className="text-blue-600 font-medium flex items-center mt-2">
+                              <ArrowLeft className="w-4 h-4 mr-1" />
+                              Use the form below to add today's data
+                            </div>
+                          }
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
             ) : (
-              <div className="max-w-3xl mx-auto py-12">
+              <div className="max-w-6xl mx-auto py-12">
                 <div className="relative overflow-hidden rounded-2xl">
                   <div className="absolute inset-0 bg-gradient-to-r from-emerald-100/50 to-teal-100/50 backdrop-blur-[3px]"></div>
                   <p className="relative font-bold text-green-700 text-2xl text-center leading-relaxed p-8 bg-green/60">

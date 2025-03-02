@@ -1,13 +1,13 @@
-import express from 'express';
-import bcrypt from 'bcrypt';
-import pkg from 'pg'; 
+import express from 'express';// db
+import bcrypt from 'bcrypt';// db
+import pkg from 'pg'; //download packages
 import cors from 'cors';
-import jwt from 'jsonwebtoken';
+import jwt from 'jsonwebtoken';//secret code
 import multer from 'multer';
-import fs from 'fs';
+import fs from 'fs';//file system
 import path from 'path';
 import { fileURLToPath } from 'url';
-import nodemailer from 'nodemailer';
+import nodemailer from 'nodemailer';//for mailing
 import dotenv from 'dotenv';
 // import crypto from 'crypto';
 
@@ -1070,6 +1070,72 @@ app.get('/api/orders/:id', async (req, res) => {
 });
 
 
+app.post('/api/callback-requests', async (req, res) => {
+  try {
+      const { name, phone } = req.body;
+
+      // Validate phone number
+      if (!/^\d{10}$/.test(phone)) {
+          return res.status(400).json({ error: 'Phone number must be exactly 10 digits' });
+      }
+
+      const result = await pool.query(
+          'INSERT INTO callback_requests (name, phone) VALUES ($1, $2) RETURNING *',
+          [name, phone]
+      );
+
+      res.status(201).json(result.rows[0]);
+  } catch (error) {
+      console.error('Error submitting callback request:', error);
+      res.status(500).json({ error: 'Failed to submit callback request' });
+  }
+});
+
+// Get all callback requests
+app.get('/api/callback-requests', async (req, res) => {
+  try {
+      const result = await pool.query(
+          `SELECT id, name, phone, requested_at, status 
+           FROM callback_requests 
+           ORDER BY CASE 
+              WHEN status = 'pending' THEN 0 
+              ELSE 1 
+           END, requested_at DESC`
+      );
+
+      res.json(result.rows);
+  } catch (error) {
+      console.error('Error fetching callback requests:', error);
+      res.status(500).json({ error: 'Failed to fetch callback requests' });
+  }
+});
+
+// Update callback request status
+app.put('/api/callback-requests/:id/status', async (req, res) => {
+  try {
+      const { id } = req.params;
+      const { status } = req.body;
+
+      if (!['pending', 'completed'].includes(status)) {
+          return res.status(400).json({ error: 'Invalid status' });
+      }
+
+      const result = await pool.query(
+          'UPDATE callback_requests SET status = $1 WHERE id = $2 RETURNING *',
+          [status, id]
+      );
+
+      if (result.rows.length === 0) {
+          return res.status(404).json({ error: 'Callback request not found' });
+      }
+
+      res.json(result.rows[0]);
+  } catch (error) {
+      console.error('Error updating callback request:', error);
+      res.status(500).json({ error: 'Failed to update callback request' });
+  }
+});
+
 // Staff listing route
 app.get('/api/staff', async (req, res) => {
   try {
@@ -1199,153 +1265,157 @@ app.put('/api/milk-quality/:date', async (req, res) => {
 
 
 
+//----------------------------------
 
-// Get assigned orders for the logged-in staff member
-app.get('/api/staff/assigned-orders', async (req, res) => {
+// Get delivery statistics
+app.get('/api/deliveries/stats', async (req, res) => {
   try {
-    // Assuming you have the staff's ID from authentication
-    const staffId = req.user.id; // Get this from your auth middleware
+    const totalResult = await pool.query('SELECT COUNT(*) FROM customer_orders');
+    const completedResult = await pool.query('SELECT COUNT(*) FROM customer_orders WHERE delivery_status = $1', ['completed']);
+    const pendingResult = await pool.query('SELECT COUNT(*) FROM customer_orders WHERE delivery_status = $1', ['pending']);
     
-    const result = await pool.query(`
-      SELECT 
-        id, product_name, quantity, 
-        customer_name, customer_phone, customer_postal_code, 
-        customer_house_number, delivery_status, delivery_proof_url
-      FROM customer_orders 
-      WHERE assigned_to = $1
-      ORDER BY delivery_due_date ASC
-    `, [staffId]);
+    res.json({
+      total: parseInt(totalResult.rows[0].count),
+      completed: parseInt(completedResult.rows[0].count),
+      pending: parseInt(pendingResult.rows[0].count)
+    });
+  } catch (error) {
+    console.error('Error fetching delivery stats:', error);
+    res.status(500).json({ error: 'Failed to fetch delivery statistics' });
+  }
+});
+
+// Get deliveries based on status
+app.get('/api/deliveries', async (req, res) => {
+  try {
+    const { status } = req.query;
+    let query = 'SELECT * FROM customer_orders';
+    let params = [];
     
+    if (status && status !== 'all') {
+      query += ' WHERE delivery_status = $1';
+      params.push(status);
+    }
+    
+    query += ' ORDER BY delivery_due_date ASC';
+    
+    const result = await pool.query(query, params);
     res.json(result.rows);
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error('Error fetching deliveries:', error);
+    res.status(500).json({ error: 'Failed to fetch deliveries' });
   }
 });
 
-// Update delivery status
-app.put('/api/orders/:id/delivery-status', async (req, res) => {
-  const { id } = req.params;
-  const { deliveryStatus } = req.body;
-  const staffId = req.user.id; // Get this from your auth middleware
-  
+// Get delivery by ID
+app.get('/api/deliveries/:id', async (req, res) => {
   try {
-    const result = await pool.query(
-      `UPDATE customer_orders 
-       SET delivery_status = $1, 
-           updated_at = CURRENT_TIMESTAMP
-       WHERE id = $2 AND assigned_to = $3
-       RETURNING *`,
-      [deliveryStatus, id, staffId]
-    );
+    const { id } = req.params;
+    const result = await pool.query('SELECT * FROM customer_orders WHERE id = $1', [id]);
     
-    if (result.rowCount === 0) {
-      return res.status(404).json({ error: 'Order not found or not assigned to you' });
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Delivery not found' });
     }
     
-    res.json({ success: true });
+    res.json(result.rows[0]);
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error('Error fetching delivery:', error);
+    res.status(500).json({ error: 'Failed to fetch delivery details' });
   }
 });
 
-// Upload delivery proof
-app.post('/api/orders/:id/delivery-proof', upload.single('deliveryProof'), async (req, res) => {
-  const { id } = req.params;
-  const staffId = req.user.id; // Get this from your auth middleware
-  const file = req.file;
-  
-  if (!file) {
-    return res.status(400).json({ error: 'No file uploaded' });
-  }
-
-  const fileUrl = `/uploads/${file.filename}`;
+// Update delivery with proof image upload
+app.put('/api/deliveries/:id', upload.single('delivery_proof'), async (req, res) => {
+  const client = await pool.connect();
   
   try {
-    const result = await pool.query(
-      `UPDATE customer_orders 
-       SET delivery_proof_url = $1, 
-           updated_at = CURRENT_TIMESTAMP
-       WHERE id = $2 AND assigned_to = $3
-       RETURNING *`,
-      [fileUrl, id, staffId]
-    );
+    await client.query('BEGIN');
     
-    if (result.rowCount === 0) {
-      return res.status(404).json({ error: 'Order not found or not assigned to you' });
+    const { id } = req.params;
+    const { delivery_status, actual_delivery_date } = req.body;
+    
+    // First verify the delivery exists
+    const checkResult = await client.query('SELECT * FROM customer_orders WHERE id = $1', [id]);
+    
+    if (checkResult.rows.length === 0) {
+      await client.query('ROLLBACK');
+      return res.status(404).json({ error: 'Delivery not found' });
     }
     
-    res.json({ success: true, fileUrl });
+    // Base update query
+    let query = 'UPDATE customer_orders SET delivery_status = $1, updated_at = CURRENT_TIMESTAMP';
+    let params = [delivery_status];
+    let paramCount = 2;
+    
+    // If actual_delivery_date is provided, add it to the query
+    if (actual_delivery_date) {
+      query += `, actual_delivery_date = $${paramCount}`;
+      params.push(actual_delivery_date);
+      paramCount++;
+    }
+    
+    // If a file was uploaded, add delivery_proof_url to the query
+    if (req.file) {
+      const fileUrl = `http://localhost:3000/uploads/${req.file.filename}`;
+      query += `, delivery_proof_url = $${paramCount}`;
+      params.push(fileUrl);
+      paramCount++;
+    }
+    
+    // Finish the query with WHERE clause
+    query += ` WHERE id = $${paramCount} RETURNING *`;
+    params.push(id);
+    
+    // Execute the update
+    const result = await client.query(query, params);
+    await client.query('COMMIT');
+    
+    res.json(result.rows[0]);
   } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
-app.post('/api/callback-requests', async (req, res) => {
-  try {
-      const { name, phone } = req.body;
-
-      // Validate phone number
-      if (!/^\d{10}$/.test(phone)) {
-          return res.status(400).json({ error: 'Phone number must be exactly 10 digits' });
+    await client.query('ROLLBACK');
+    console.error('Error updating delivery:', error);
+    
+    // If there was an error and a file was uploaded, try to delete it
+    if (req.file) {
+      try {
+        fs.unlinkSync(req.file.path);
+      } catch (unlinkError) {
+        console.error('Error deleting file after failed update:', unlinkError);
       }
-
-      const result = await pool.query(
-          'INSERT INTO callback_requests (name, phone) VALUES ($1, $2) RETURNING *',
-          [name, phone]
-      );
-
-      res.status(201).json(result.rows[0]);
-  } catch (error) {
-      console.error('Error submitting callback request:', error);
-      res.status(500).json({ error: 'Failed to submit callback request' });
+    }
+    
+    res.status(500).json({ error: 'Failed to update delivery' });
+  } finally {
+    client.release();
   }
 });
 
-// Get all callback requests
-app.get('/api/callback-requests', async (req, res) => {
-  try {
-      const result = await pool.query(
-          `SELECT id, name, phone, requested_at, status 
-           FROM callback_requests 
-           ORDER BY CASE 
-              WHEN status = 'pending' THEN 0 
-              ELSE 1 
-           END, requested_at DESC`
-      );
 
-      res.json(result.rows);
-  } catch (error) {
-      console.error('Error fetching callback requests:', error);
-      res.status(500).json({ error: 'Failed to fetch callback requests' });
+// Error handling middleware
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  
+  if (err instanceof multer.MulterError) {
+    if (err.code === 'LIMIT_FILE_SIZE') {
+      return res.status(400).json({
+        message: 'File is too large. Maximum size is 5MB'
+      });
+    }
+    return res.status(400).json({
+      message: 'Error uploading file'
+    });
   }
-});
-
-// Update callback request status
-app.put('/api/callback-requests/:id/status', async (req, res) => {
-  try {
-      const { id } = req.params;
-      const { status } = req.body;
-
-      if (!['pending', 'completed'].includes(status)) {
-          return res.status(400).json({ error: 'Invalid status' });
-      }
-
-      const result = await pool.query(
-          'UPDATE callback_requests SET status = $1 WHERE id = $2 RETURNING *',
-          [status, id]
-      );
-
-      if (result.rows.length === 0) {
-          return res.status(404).json({ error: 'Callback request not found' });
-      }
-
-      res.json(result.rows[0]);
-  } catch (error) {
-      console.error('Error updating callback request:', error);
-      res.status(500).json({ error: 'Failed to update callback request' });
+  
+  if (err.message === 'Only jpeg, jpg, and png files are allowed') {
+    return res.status(400).json({
+      message: err.message
+    });
   }
+  
+  res.status(500).json({
+    message: 'Internal server error'
+  });
 });
-// Start the server
 
 
 app.listen(3000, () => {

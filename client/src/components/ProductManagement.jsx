@@ -1,12 +1,21 @@
 import React, { useState, useEffect } from 'react';
-import { Milk, ImageIcon, Trash2, Edit, Plus, X, Search } from 'lucide-react';
+import { 
+  Milk, 
+  ImageIcon, 
+  Trash2, 
+  Edit, 
+  Plus, 
+  X, 
+  Search, 
+  ArrowLeft, 
+  AlertTriangle 
+} from 'lucide-react';
 
 const getImageUrl = (imageUrl) => {
   if (!imageUrl) return '/placeholder-image.jpg';
   if (imageUrl.startsWith('http')) return imageUrl;
   return `http://localhost:3000${imageUrl}`;
 };
-
 
 const ProductManagement = () => {
   const [products, setProducts] = useState([]);
@@ -15,6 +24,8 @@ const ProductManagement = () => {
   const [imagePreview, setImagePreview] = useState(null);
   const [uploadedImage, setUploadedImage] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const [showAlert, setShowAlert] = useState(false);
+  const [alertMessage, setAlertMessage] = useState('');
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -24,21 +35,26 @@ const ProductManagement = () => {
     is_milk_product: false,
     subscription_amount: 0,
     quantity: 0,
-    unit: 'ml,l'
+    unit: 'ml'
   });
 
   useEffect(() => {
     fetchProducts();
   }, []);
 
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setUploadedImage(file);
+      setImagePreview(URL.createObjectURL(file));
+    }
+  };
 
-const handleImageChange = (e) => {
-  const file = e.target.files[0];
-  if (file) {
-    setSelectedImage(file);
-    setPreviewUrl(URL.createObjectURL(file));
-  }
-};
+  const showAlertMessage = (message) => {
+    setAlertMessage(message);
+    setShowAlert(true);
+    setTimeout(() => setShowAlert(false), 3000);
+  };
 
   const fetchProducts = async () => {
     try {
@@ -46,6 +62,7 @@ const handleImageChange = (e) => {
       const data = await response.json();
       setProducts(data);
     } catch (error) {
+      showAlertMessage('Error fetching products');
       console.error('Error fetching products:', error);
     }
   };
@@ -81,11 +98,13 @@ const handleImageChange = (e) => {
       });
 
       if (response.ok) {
+        showAlertMessage(selectedProduct ? 'Product updated successfully' : 'Product added successfully');
         fetchProducts();
         setIsModalOpen(false);
         resetForm();
       }
     } catch (error) {
+      showAlertMessage('Error saving product');
       console.error('Error saving product:', error);
     }
   };
@@ -114,9 +133,11 @@ const handleImageChange = (e) => {
         });
 
         if (response.ok) {
+          showAlertMessage('Product deleted successfully');
           fetchProducts();
         }
       } catch (error) {
+        showAlertMessage('Error deleting product');
         console.error('Error deleting product:', error);
       }
     }
@@ -135,7 +156,7 @@ const handleImageChange = (e) => {
       quantity: product.quantity,
       unit: product.unit || 'ml'
     });
-    setImagePreview(null);
+    setImagePreview(product.image_url ? getImageUrl(product.image_url) : null);
     setIsModalOpen(true);
   };
 
@@ -145,7 +166,32 @@ const handleImageChange = (e) => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 py-8">
+      {/* Alert Box */}
+      {showAlert && (
+        <div className="fixed top-4 right-4 z-50 flex items-center bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded shadow-lg">
+          <AlertTriangle className="w-5 h-5 mr-2" />
+          <span className="mr-2">{alertMessage}</span>
+          <button 
+            onClick={() => setShowAlert(false)}
+            className="text-red-700 hover:text-red-900 transition-colors"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      )}
+
       <div className="max-w-10xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Enhanced Back Button */}
+        <button 
+          onClick={() => window.history.back()}
+          className="mb-6 flex items-center gap-2 px-4 py-2 bg-white text-blue-600 hover:text-blue-800 rounded-lg shadow-sm hover:shadow transition-all duration-300 border border-gray-200 group"
+        >
+          <div className="relative">
+            <ArrowLeft className="w-5 h-5 transition-transform duration-300 group-hover:-translate-x-1" />
+          </div>
+          <span className="font-medium">Back to Dashboard</span>
+        </button>
+
         {/* Header Section */}
         <div className="mb-8">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -180,6 +226,18 @@ const handleImageChange = (e) => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredProducts.map((product) => (
             <div key={product.id} className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow">
+              {/* Product Image */}
+              <div className="h-48 overflow-hidden">
+                <img
+                  src={getImageUrl(product.image_url)}
+                  alt={product.name}
+                  className="w-full h-full object-cover"
+                  onError={(e) => {
+                    e.target.src = '/placeholder-image.jpg';
+                  }}
+                />
+              </div>
+              
               <div className="p-6">
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-2">
@@ -256,176 +314,190 @@ const handleImageChange = (e) => {
               </div>
 
               <form onSubmit={handleSubmit} className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Image Upload Preview */}
+                <div className="mb-6">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Product Image
+                  </label>
+                  <div className="flex items-center space-x-4">
+                    <div className="relative w-32 h-32 bg-gray-100 rounded-lg overflow-hidden">
+                      {imagePreview ? (
+                        <>
+                          <img
+                            src={imagePreview}
+                            alt="Preview"
+                            className="w-full h-full object-cover"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setImagePreview(null);
+                              setUploadedImage(null);
+                            }}
+                            className="absolute top-2 right-2 bg-red-500 text-white p-1 rounded-full hover:bg-red-600 transition-colors"
+                          >
+                            <X className="w-4 h-4" />
+                          </button>
+                        </>
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center">
+                          <ImageIcon className="w-8 h-8 text-gray-400" />
+                        </div>
+                      )}
+                    </div>
+                    <div>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleImageChange}
+                        className="hidden"
+                        id="image-upload"
+                      />
+                      <label
+                        htmlFor="image-upload"
+                        className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 cursor-pointer"
+                      >
+                        <ImageIcon className="w-5 h-5 mr-2 text-gray-400" />
+                        {imagePreview ? 'Change Image' : 'Upload Image'}
+                      </label>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1  md:grid-cols-2 gap-6">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700">Name</label>
+                    <label className="block text-sm ml-2 font-medium text-gray-700">Name</label>
                     <input
                       type="text"
                       value={formData.name}
                       onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                       className="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       required
-                    />
-                  </div>
+                    /></div>
 
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">Quantity</label>
-                    <div className="mt-1 flex rounded-lg shadow-sm">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">Quantity</label>
+                      <div className="mt-1 flex rounded-lg shadow-sm">
+                        <input
+                          type="number"
+                          value={formData.quantity}
+                          onChange={(e) => setFormData({ ...formData, quantity: parseInt(e.target.value) })}
+                          className="block w-full rounded-l-lg border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          required
+                        />
+                        <select
+                          value={formData.unit}
+                          onChange={(e) => setFormData({ ...formData, unit: e.target.value })}
+                          className="rounded-r-lg border-gray-300 bg-gray-50 px-3 text-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        >
+                          <option value="ml">Mili Liter</option>
+                          <option value="l">Liter</option>
+                        </select>
+                      </div>
+                    </div>
+  
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">Stock Quantity</label>
                       <input
                         type="number"
-                        value={formData.quantity}
-                        onChange={(e) => setFormData({ ...formData, quantity: parseInt(e.target.value) })}
-                        className="block w-full rounded-l-lg border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        value={formData.stock_quantity}
+                        onChange={(e) => setFormData({ ...formData, stock_quantity: parseInt(e.target.value) })}
+                        className="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         required
                       />
-                      <select
-                        value={formData.unit}
-                        onChange={(e) => setFormData({ ...formData, unit: e.target.value })}
-                        className="rounded-r-lg border-gray-300 bg-gray-50 px-3 text-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      >
-                        <option value="ml">Mili Liter</option>
-                        <option value="l">Liter</option>
-                      </select>
                     </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">Stock Quantity</label>
-                    <input
-                      type="number"
-                      value={formData.stock_quantity}
-                      onChange={(e) => setFormData({ ...formData, stock_quantity: parseInt(e.target.value) })}
-                      className="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      required
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">Rate</label>
-                    <input
-                      type="number"
-                      value={formData.rate}
-                      onChange={(e) => setFormData({ ...formData, rate: parseFloat(e.target.value) })}
-                      className="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      step="0.01"
-                      required
-                    />
-                  </div>
-
-                  <div className="col-span-full">
-                    <label className="block text-sm font-medium text-gray-700">Description</label>
-                    <textarea
-                      value={formData.description}
-                      onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                      className="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      rows="3"
-                    />
-                  </div>
-
-                  <div className="col-span-full">
-                    <label className="block text-sm font-medium text-gray-700">Product Image</label>
-                    <div className="mt-1 flex items-center space-x-4">
-                      <div className="relative">
-                        {imagePreview || (selectedProduct && selectedProduct.image_url) ? (
-                          <div className="w-32 h-32 rounded-lg overflow-hidden">
-                            <img 
-                              src={imagePreview || `http://localhost:3000${selectedProduct.image_url}`}
-                              alt="Product preview"
-                              className="w-full h-full object-cover"
-                            />
-                            <button
-                              type="button"
-                              onClick={() => {
-                                setImagePreview(null);
-                                setUploadedImage(null);
-                              }}
-                              className="absolute top-0 right-0 bg-red-500 text-white p-1 rounded-bl"
-                            >
-                              <X className="w-4 h-4" />
-                            </button>
-                          </div>
-                        ) : (
-                          <div className="w-32 h-32 border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center">
-                            <ImageIcon className="w-8 h-8 text-gray-400" />
-                          </div>
-                        )}
-                      </div>
-                      <div>
+  
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">Rate</label>
+                      <input
+                        type="number"
+                        value={formData.rate}
+                        onChange={(e) => setFormData({ ...formData, rate: parseFloat(e.target.value) })}
+                        className="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        step="0.01"
+                        required
+                      />
+                    </div>
+  
+                    <div className="col-span-full">
+                      <label className="block text-sm font-medium text-gray-700">Description</label>
+                      <textarea
+                        value={formData.description}
+                        onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                        className="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        rows="3"
+                      />
+                    </div>
+  
+                    <div className="col-span-full">
+                      <div className="flex items-center space-x-2">
                         <input
-                          type="file"
-                          accept="image/*"
-                          onChange={handleImageChange}
-                          className="hidden"
-                          id="image-upload"
+                          type="checkbox"
+                          id="is_milk_product"
+                          checked={formData.is_milk_product}
+                          onChange={(e) => setFormData({ 
+                            ...formData, 
+                            is_milk_product: e.target.checked,
+                            subscription_amount: e.target.checked ? formData.subscription_amount : 0
+                          })}
+                          className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                         />
-                        <label
-                        htmlFor="image-upload"
-                        className="cursor-pointer px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
-                      >
-                        {imagePreview ? 'Change Image' : 'Upload Image'}
-                      </label>
+                        <label htmlFor="is_milk_product" className="text-sm text-gray-700 flex items-center">
+                          <Milk className="w-4 h-4 mr-2 text-blue-500" />
+                          This is a milk product
+                        </label>
+                      </div>
                     </div>
+  
+                    {formData.is_milk_product && (
+                      <div className="col-span-full">
+                        <label className="block text-sm font-medium text-gray-700">
+                          Subscription Amount (per month)
+                        </label>
+                        <input
+                          type="number"
+                          value={formData.subscription_amount}
+                          onChange={(e) => setFormData({ ...formData, subscription_amount: parseFloat(e.target.value) })}
+                          className="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          step="0.01"
+                          required={formData.is_milk_product}
+                        />
+                      </div>
+                    )}
                   </div>
-                 </div>
-
-                 <div className="col-span-full">
-                  <div className="flex items-center space-x-2">
-                    <input
-                      type="checkbox"
-                      id="is_milk_product"
-                      checked={formData.is_milk_product}
-                      onChange={(e) => setFormData({ 
-                        ...formData, 
-                        is_milk_product: e.target.checked,
-                        subscription_amount: e.target.checked ? formData.subscription_amount : 0
-                      })}
-                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                    />
-                    <label htmlFor="is_milk_product" className="text-sm text-gray-700">
-                      This is a milk product
-                    </label>
+  
+                  <div className="flex justify-end gap-4 mt-8">
+                    <button
+                      type="button"
+                      onClick={() => setIsModalOpen(false)}
+                      className="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
+                    >
+                      {selectedProduct ? (
+                        <>
+                          <Edit className="w-4 h-4" />
+                          Update Product
+                        </>
+                      ) : (
+                        <>
+                          <Plus className="w-4 h-4" />
+                          Add Product
+                        </>
+                      )}
+                    </button>
                   </div>
-                 </div>
-
-                 {formData.is_milk_product && (
-                  <div className="col-span-full">
-                    <label className="block text-sm font-medium text-gray-700">
-                      Subscription Amount (per month)
-                    </label>
-                    <input
-                      type="number"
-                      value={formData.subscription_amount}
-                      onChange={(e) => setFormData({ ...formData, subscription_amount: parseFloat(e.target.value) })}
-                      className="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      step="0.01"
-                      required={formData.is_milk_product}
-                    />
-                  </div>
-                 )}
-
-                 <div className="flex justify-end gap-4 mt-8">
-                  <button
-                    type="button"
-                    onClick={() => setIsModalOpen(false)}
-                    className="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                  >
-                    {selectedProduct ? 'Update Product' : 'Add Product'}
-                  </button>
-                 </div>
-                 </div>
-                 </form>
+                </form>
+              </div>
             </div>
-          </div>
-        )}
+          )}
+        </div>
       </div>
-    </div>
-  );
-};
-
-export default ProductManagement;
+    );
+  };
+  
+  export default ProductManagement;

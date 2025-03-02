@@ -1,30 +1,20 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  UserPlus, 
-  Pencil, 
-  Trash2, 
-  Mail, 
-  Phone, 
-  Calendar, 
-  DollarSign, 
-  Briefcase,
-  Image as ImageIcon,
-  X,
-  Search,
-  User,
-  AlertCircle
-} from 'lucide-react';
+import axios from 'axios';
+import { User, Edit, Trash2, Plus, Search, X, Upload, Mail, Phone, Tag, Calendar, DollarSign, Save, Loader2, ArrowLeft } from 'lucide-react';
 
-const API_BASE_URL = 'http://localhost:3000/api/staff';
+// Helper function for image URL handling
+const getImageUrl = (imageUrl) => {
+  if (!imageUrl) return '/placeholder-staff.jpg';
+  if (imageUrl.startsWith('http')) return imageUrl;
+  return `http://localhost:3000${imageUrl}`;
+};
 
-const StaffManagement = () => {
-  const [staffList, setStaffList] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedStaff, setSelectedStaff] = useState(null);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [submitError, setSubmitError] = useState(null);
+// Staff Form Component (Modal)
+const StaffFormModal = ({ isOpen, onClose, staffToEdit, onSuccess }) => {
+  const isEditMode = !!staffToEdit;
+  const [loading, setLoading] = useState(false);
+  const [previewImage, setPreviewImage] = useState(null);
+  
   const [formData, setFormData] = useState({
     first_name: '',
     last_name: '',
@@ -36,399 +26,522 @@ const StaffManagement = () => {
     image: null
   });
 
+  // Reset form when modal opens/closes or when staffToEdit changes
   useEffect(() => {
-    fetchStaff();
-  }, []);
-
-  const fetchStaff = async () => {
-    try {
-      setIsLoading(true);
-      setError(null);
-      const response = await fetch(API_BASE_URL);
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+    if (isOpen) {
+      if (isEditMode && staffToEdit) {
+        setFormData({
+          first_name: staffToEdit.first_name || '',
+          last_name: staffToEdit.last_name || '',
+          email: staffToEdit.email || '',
+          phone: staffToEdit.phone || '',
+          role: staffToEdit.role || '',
+          joining_date: staffToEdit.joining_date ? staffToEdit.joining_date.split('T')[0] : '',
+          salary: staffToEdit.salary || '',
+          image: null
+        });
+        
+        if (staffToEdit.image_url) {
+          setPreviewImage(getImageUrl(staffToEdit.image_url));
+        } else {
+          setPreviewImage(null);
+        }
+      } else {
+        // Reset form for new staff
+        setFormData({
+          first_name: '',
+          last_name: '',
+          email: '',
+          phone: '',
+          role: '',
+          joining_date: '',
+          salary: '',
+          image: null
+        });
+        setPreviewImage(null);
       }
-      const data = await response.json();
-      setStaffList(Array.isArray(data) ? data : []);
-    } catch (error) {
-      console.error('Error fetching staff:', error);
-      setError('Failed to load staff data. Please try again later.');
-      setStaffList([]);
-    } finally {
-      setIsLoading(false);
     }
-  };
-
-  const filteredStaff = staffList.filter(staff => 
-    staff.first_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    staff.last_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    staff.role?.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  }, [isOpen, staffToEdit]);
 
   const handleInputChange = (e) => {
-    const { name, value, files } = e.target;
-    if (name === 'image') {
-      setFormData(prev => ({ ...prev, image: files[0] }));
-    } else {
-      setFormData(prev => ({ ...prev, [name]: value }));
+    const { name, value } = e.target;
+    setFormData({
+      ...formData,
+      [name]: value
+    });
+  };
+
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setFormData({
+        ...formData,
+        image: file
+      });
+      
+      // Create a preview URL
+      const reader = new FileReader();
+      reader.onload = () => {
+        setPreviewImage(reader.result);
+      };
+      reader.readAsDataURL(file);
     }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setSubmitError(null);
+    setLoading(true);
     
-    const formDataToSend = new FormData();
-    Object.keys(formData).forEach(key => {
-      if (key === 'image' && formData[key]) {
-        formDataToSend.append('image', formData[key]);
-      } else if (formData[key]) {
-        formDataToSend.append(key, formData[key]);
-      }
-    });
-
     try {
-      const url = selectedStaff ? `${API_BASE_URL}/${selectedStaff.id}` : API_BASE_URL;
-      const method = selectedStaff ? 'PUT' : 'POST';
-      
-      const response = await fetch(url, {
-        method,
-        body: formDataToSend
+      // Create a FormData object to handle the file upload
+      const data = new FormData();
+      Object.keys(formData).forEach(key => {
+        if (key === 'image' && formData[key]) {
+          data.append('image', formData[key]);
+        } else if (key !== 'image') {
+          data.append(key, formData[key]);
+        }
       });
       
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to save staff member');
+      let response;
+      if (isEditMode) {
+        response = await axios.put(`http://localhost:3000/api/staff/${staffToEdit.id}`, data, {
+          headers: {
+            'Content-Type': 'multipart/form-data'
+          }
+        });
+      } else {
+        response = await axios.post('http://localhost:3000/api/staff', data, {
+          headers: {
+            'Content-Type': 'multipart/form-data'
+          }
+        });
       }
       
-      await fetchStaff();
-      setIsModalOpen(false);
-      resetForm();
+      // Call the success callback
+      onSuccess(response.data);
+      onClose();
     } catch (error) {
       console.error('Error saving staff:', error);
-      setSubmitError(error.message);
+      alert('Failed to save staff information. Please try again.');
+    } finally {
+      setLoading(false);
     }
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+      <div className="bg-white rounded-lg shadow-xl w-full max-w-3xl max-h-[90vh] overflow-y-auto">
+        <div className="flex justify-between items-center border-b p-4">
+          <h2 className="text-xl font-bold">
+            {isEditMode ? 'Edit Staff Member' : 'Add New Staff Member'}
+          </h2>
+          <button 
+            onClick={onClose}
+            className="text-gray-500 hover:text-gray-700"
+          >
+            <X className="w-6 h-6" />
+          </button>
+        </div>
+        
+        <form onSubmit={handleSubmit} className="p-6 space-y-6">
+          {/* Image upload section */}
+          <div className="flex flex-col items-center mb-6">
+            <div className="w-32 h-32 rounded-full overflow-hidden bg-gray-200 mb-4">
+              {previewImage ? (
+                <img 
+                  src={previewImage} 
+                  alt="Staff profile" 
+                  className="w-full h-full object-cover"
+                  onError={(e) => {
+                    e.target.src = '/placeholder-staff.jpg';
+                    e.target.onerror = null;
+                  }}
+                />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center bg-gray-200">
+                  <User className="w-16 h-16 text-gray-400" />
+                </div>
+              )}
+            </div>
+            
+            <label className="flex items-center gap-2 bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-md cursor-pointer transition-colors">
+              <Upload className="w-5 h-5" />
+              Upload Photo
+              <input
+                type="file"
+                name="image"
+                accept="image/*"
+                onChange={handleImageChange}
+                className="hidden"
+              />
+            </label>
+          </div>
+          
+          {/* Personal Information */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium mb-1">First Name *</label>
+              <div className="relative">
+                <User className="w-5 h-5 absolute left-3 top-3 text-gray-400" />
+                <input
+                  type="text"
+                  name="first_name"
+                  value={formData.first_name}
+                  onChange={handleInputChange}
+                  className="w-full pl-10 p-2 border rounded-md"
+                  required
+                />
+              </div>
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium mb-1">Last Name *</label>
+              <div className="relative">
+                <User className="w-5 h-5 absolute left-3 top-3 text-gray-400" />
+                <input
+                  type="text"
+                  name="last_name"
+                  value={formData.last_name}
+                  onChange={handleInputChange}
+                  className="w-full pl-10 p-2 border rounded-md"
+                  required
+                />
+              </div>
+            </div>
+          </div>
+          
+          {/* Contact Information */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium mb-1">Email *</label>
+              <div className="relative">
+                <Mail className="w-5 h-5 absolute left-3 top-3 text-gray-400" />
+                <input
+                  type="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleInputChange}
+                  className="w-full pl-10 p-2 border rounded-md"
+                  required
+                />
+              </div>
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium mb-1">Phone *</label>
+              <div className="relative">
+                <Phone className="w-5 h-5 absolute left-3 top-3 text-gray-400" />
+                <input
+                  type="tel"
+                  name="phone"
+                  value={formData.phone}
+                  onChange={handleInputChange}
+                  className="w-full pl-10 p-2 border rounded-md"
+                  required
+                />
+              </div>
+            </div>
+          </div>
+          
+          {/* Employment Information */}
+          <div>
+            <label className="block text-sm font-medium mb-1">Role *</label>
+            <div className="relative">
+              <Tag className="w-5 h-5 absolute left-3 top-3 text-gray-400" />
+              <select
+                name="role"
+                value={formData.role}
+                onChange={handleInputChange}
+                className="w-full pl-10 p-2 border rounded-md"
+                required
+              >
+                <option value="">Select Role</option>
+                <option value="Manager">Manager</option>
+                <option value="Sales Associate">Sales Associate</option>
+                <option value="Delivery Staff">Delivery Staff</option>
+                <option value="Customer Support">Customer Support</option>
+                <option value="Admin">Admin</option>
+              </select>
+            </div>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium mb-1">Joining Date *</label>
+              <div className="relative">
+                <Calendar className="w-5 h-5 absolute left-3 top-3 text-gray-400" />
+                <input
+                  type="date"
+                  name="joining_date"
+                  value={formData.joining_date}
+                  onChange={handleInputChange}
+                  className="w-full pl-10 p-2 border rounded-md"
+                  required
+                />
+              </div>
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium mb-1">Salary *</label>
+              <div className="relative">
+                <DollarSign className="w-5 h-5 absolute left-3 top-3 text-gray-400" />
+                <input
+                  type="number"
+                  name="salary"
+                  value={formData.salary}
+                  onChange={handleInputChange}
+                  className="w-full pl-10 p-2 border rounded-md"
+                  required
+                />
+              </div>
+            </div>
+          </div>
+          
+          {/* Submit Button */}
+          <div className="flex justify-end gap-3 pt-4 border-t">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={loading}
+              className="flex items-center justify-center gap-2 bg-green-500 hover:bg-green-600 text-white py-2 px-6 rounded-md transition-colors shadow-md disabled:bg-gray-400"
+            >
+              {loading ? (
+                <>
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                  Saving...
+                </>
+              ) : (
+                <>
+                  <Save className="w-5 h-5" />
+                  {isEditMode ? 'Update' : 'Save'}
+                </>
+              )}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+};
+
+// Main Staff List Component with integrated modal
+const StaffManagement = () => {
+  const [staff, setStaff] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [currentStaff, setCurrentStaff] = useState(null);
+  
+  // Add state or props for navigation if needed
+  const handleBackNavigation = () => {
+    // You can implement your navigation logic here
+    // For example: router.push('/dashboard') or window.history.back()
+    console.log('Navigating back...');
+    window.history.back(); // Default behavior - go back to previous page
+  };
+
+  useEffect(() => {
+    fetchStaffList();
+  }, []);
+
+  const fetchStaffList = async () => {
+    setLoading(true);
+    try {
+      const response = await axios.get('http://localhost:3000/api/staff');
+      setStaff(response.data);
+    } catch (error) {
+      console.error('Error fetching staff list:', error);
+      alert('Failed to load staff list. Please refresh the page.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleAddNew = () => {
+    setCurrentStaff(null);
+    setIsModalOpen(true);
+  };
+
+  const handleEdit = (staffMember) => {
+    setCurrentStaff(staffMember);
+    setIsModalOpen(true);
   };
 
   const handleDelete = async (id) => {
     if (window.confirm('Are you sure you want to delete this staff member?')) {
       try {
-        const response = await fetch(`${API_BASE_URL}/${id}`, { method: 'DELETE' });
-        if (!response.ok) {
-          throw new Error('Failed to delete staff member');
-        }
-        await fetchStaff();
+        await axios.delete(`http://localhost:3000/api/staff/${id}`);
+        // Remove from state without refetching
+        setStaff(staff.filter(member => member.id !== id));
       } catch (error) {
         console.error('Error deleting staff:', error);
-        setError('Failed to delete staff member. Please try again.');
+        alert('Failed to delete staff member.');
       }
     }
   };
 
-  const resetForm = () => {
-    setFormData({
-      first_name: '',
-      last_name: '',
-      email: '',
-      phone: '',
-      role: '',
-      joining_date: '',
-      salary: '',
-      image: null
-    });
-    setSelectedStaff(null);
-    setSubmitError(null);
+  const handleFormSuccess = (updatedStaff) => {
+    if (currentStaff) {
+      // Update existing staff in the list
+      setStaff(staff.map(member => 
+        member.id === updatedStaff.id ? updatedStaff : member
+      ));
+    } else {
+      // Add new staff to the list
+      setStaff([...staff, updatedStaff]);
+    }
   };
 
+  const filteredStaff = staff.filter(
+    member => 
+      member.first_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      member.last_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      member.role?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      member.email?.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   return (
-    <div className="p-4 bg-gray-50 min-h-screen">
-      {/* Header */}
-      <div className="bg-white p-4 rounded-lg shadow-sm mb-6">
-        <div className="flex justify-between items-center">
-          <h1 className="text-2xl font-bold text-blue-800">Staff Management</h1>
-          <button 
-            onClick={() => {
-              resetForm();
-              setIsModalOpen(true);
-            }}
-            className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
-          >
-            <UserPlus size={20} />
-            Add New Staff
-          </button>
-        </div>
-
-        {/* Error Alert */}
-        {error && (
-          <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg flex items-start gap-2 text-red-700">
-            <AlertCircle className="h-5 w-5 mt-0.5 flex-shrink-0" />
-            <p>{error}</p>
-          </div>
-        )}
-
-        {/* Search Bar */}
-        <div className="mt-4 relative">
-          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-            <Search size={20} className="text-gray-400" />
-          </div>
-          <input
-            type="text"
-            placeholder="Search staff..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-          />
-        </div>
-      </div>
-
-      {/* Loading State */}
-      {isLoading && (
-        <div className="text-center py-8">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading staff data...</p>
-        </div>
-      )}
-
-      {/* Staff Grid */}
-      {!isLoading && !error && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredStaff.length === 0 ? (
-            <div className="col-span-full text-center py-8 text-gray-500">
-              No staff members found
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 py-8">
+      <div className="container mx-auto p-4 md:p-8">
+        {/* Back Button */}
+        <button
+          onClick={handleBackNavigation}
+          className="mb-6 inline-flex items-center gap-2 py-2 px-4 text-blue-600 hover:text-blue-800 transition-colors rounded-lg hover:bg-blue-50"
+        >
+          <ArrowLeft className="w-5 h-5" />
+          <span className="font-medium">Back to Dashboard</span>
+        </button>
+      
+        {/* Header & Controls */}
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+          <h1 className="text-2xl font-bold">Staff Management</h1>
+          
+          <div className="flex flex-col md:flex-row gap-4 w-full md:w-auto">
+            <div className="relative">
+              <Search className="w-5 h-5 absolute left-3 top-3 text-gray-400" />
+              <input
+                type="text"
+                placeholder="Search staff..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10 p-2 border rounded-md w-full md:w-64"
+              />
             </div>
-          ) : (
-            filteredStaff.map(staff => (
-              <div key={staff.id} className="bg-white rounded-lg shadow-sm overflow-hidden">
-                <div className="p-4">
-                  <div className="flex items-center gap-4 mb-4">
-                    <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center">
-                    {staff.image_url ? (
-  <img 
-    src={`${API_BASE_URL}${staff.image_url}`} 
-    alt={`${staff.first_name} ${staff.last_name}`}
-    className="w-full h-full rounded-full object-cover"
-    onError={(e) => {
-      e.target.onerror = null;
-      e.target.src = 'https://via.placeholder.com/150'; // Fallback image
-    }}
-  />
-) : (
-  <User size={32} className="text-gray-400" />
-)}
+            
+            <button
+              onClick={handleAddNew}
+              className="flex items-center justify-center gap-2 bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-md transition-colors"
+            >
+              <Plus className="w-5 h-5" />
+              Add New Staff
+            </button>
+          </div>
+        </div>
+        
+        {/* Staff List */}
+        {loading ? (
+          <div className="flex flex-col items-center justify-center py-12">
+            <Loader2 className="w-12 h-12 animate-spin text-blue-500 mb-4" />
+            <p className="text-gray-600">Loading staff list...</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredStaff.length > 0 ? (
+              filteredStaff.map(member => (
+                <div key={member.id} className="bg-white rounded-lg shadow-md overflow-hidden">
+                  <div className="flex items-center p-4 border-b">
+                    <div className="w-16 h-16 rounded-full overflow-hidden bg-gray-200 mr-4">
+                      <img 
+                        src={getImageUrl(member.image_url)} 
+                        alt={`${member.first_name} ${member.last_name}`}
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          e.target.src = '/placeholder-staff.jpg';
+                          e.target.onerror = null;
+                        }}
+                      />
                     </div>
-                    <div>
-                      <h3 className="font-semibold text-lg">
-                        {staff.first_name} {staff.last_name}
-                      </h3>
-                      <p className="text-gray-600 flex items-center gap-1">
-                        <Briefcase size={16} />
-                        {staff.role}
+                    
+                    <div className="flex-1">
+                      <h2 className="font-bold text-lg">{`${member.first_name} ${member.last_name}`}</h2>
+                      <p className="text-blue-600">{member.role}</p>
+                    </div>
+                  </div>
+                  
+                  <div className="p-4">
+                    <div className="grid grid-cols-1 gap-2 text-sm">
+                      <p>
+                        <span className="font-medium">Email:</span> {member.email}
+                      </p>
+                      <p>
+                        <span className="font-medium">Phone:</span> {member.phone}
+                      </p>
+                      <p>
+                        <span className="font-medium">Joined:</span> {new Date(member.joining_date).toLocaleDateString()}
+                      </p>
+                      <p>
+                        <span className="font-medium">Salary:</span> ₹{member.salary}
                       </p>
                     </div>
                   </div>
                   
-                  <div className="space-y-2 text-sm">
-                    <p className="flex items-center gap-2">
-                      <Mail size={16} className="text-gray-400" />
-                      {staff.email}
-                    </p>
-                    <p className="flex items-center gap-2">
-                      <Phone size={16} className="text-gray-400" />
-                      {staff.phone}
-                    </p>
-                    <p className="flex items-center gap-2">
-                      <Calendar size={16} className="text-gray-400" />
-                      {new Date(staff.joining_date).toLocaleDateString()}
-                    </p>
-                    <p className="flex items-center gap-2">
-                      <DollarSign size={16} className="text-gray-400" />
-                      ${staff.salary}
-                    </p>
-                  </div>
-                  
-                  <div className="mt-4 flex justify-end gap-2">
+                  <div className="flex border-t">
                     <button
-                      onClick={() => {
-                        setSelectedStaff(staff);
-                        setFormData(staff);
-                        setIsModalOpen(true);
-                      }}
-                      className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                      onClick={() => handleEdit(member)}
+                      className="flex-1 flex items-center justify-center gap-2 py-3 hover:bg-gray-100 transition-colors text-blue-600"
                     >
-                      <Pencil size={16} />
+                      <Edit className="w-4 h-4" />
+                      Edit
                     </button>
+                    
                     <button
-                      onClick={() => handleDelete(staff.id)}
-                      className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                      onClick={() => handleDelete(member.id)}
+                      className="flex-1 flex items-center justify-center gap-2 py-3 hover:bg-gray-100 transition-colors text-red-600 border-l"
                     >
-                      <Trash2 size={16} />
+                      <Trash2 className="w-4 h-4" />
+                      Delete
                     </button>
                   </div>
                 </div>
-              </div>
-            ))
-          )}
-        </div>
-      )}
-
-      {/* Modal */}
-      {isModalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg w-full max-w-md">
-            <div className="p-6">
-              <div className="flex justify-between items-center mb-4">
-                <h2 className="text-xl font-bold text-blue-800">
-                  {selectedStaff ? 'Edit Staff' : 'Add New Staff'}
-                </h2>
-                <button 
-                  onClick={() => {
-                    setIsModalOpen(false);
-                    resetForm();
-                  }}
-                  className="text-gray-400 hover:text-gray-600"
+              ))
+            ) : (
+              <div className="col-span-full text-center py-12 bg-white rounded-lg shadow">
+                <User className="w-16 h-16 mx-auto text-gray-300 mb-4" />
+                <h3 className="text-xl font-medium text-gray-700 mb-2">No Staff Found</h3>
+                <p className="text-gray-500 mb-6">
+                  {searchTerm 
+                    ? "No staff members match your search criteria." 
+                    : "There are no staff members in the database yet."}
+                </p>
+                <button
+                  onClick={handleAddNew}
+                  className="inline-flex items-center gap-2 bg-blue-500 hover:bg-blue-600 text-white py-2 px-6 rounded-md transition-colors"
                 >
-                  <X size={24} />
+                  <Plus className="w-5 h-5" />
+                  Add Your First Staff Member
                 </button>
               </div>
-
-              {submitError && (
-                <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg flex items-start gap-2 text-red-700">
-                  <AlertCircle className="h-5 w-5 mt-0.5 flex-shrink-0" />
-                  <p>{submitError}</p>
-                </div>
-              )}
-              
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      First Name
-                    </label>
-                    <input
-                      name="first_name"
-                      value={formData.first_name}
-                      onChange={handleInputChange}
-                      className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Last Name
-                    </label>
-                    <input
-                      name="last_name"
-                      value={formData.last_name}
-                      onChange={handleInputChange}
-                      className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                      required
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Email
-                  </label>
-                  <input
-                    type="email"
-                    name="email"
-                    value={formData.email}
-                    onChange={handleInputChange}
-                    className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    required
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Phone
-                  </label>
-                  <input
-                    name="phone"
-                    value={formData.phone}
-                    onChange={handleInputChange}
-                    className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Role
-                  </label>
-                  <input
-                    name="role"
-                    value={formData.role}
-                    onChange={handleInputChange}
-                    className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    required
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Joining Date
-                  </label>
-                  <input
-                    type="date"
-                    name="joining_date"
-                    value={formData.joining_date}
-                    onChange={handleInputChange}
-                    className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    required
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Salary
-                  </label>
-                  <input
-                    type="number"
-                    name="salary"
-                    value={formData.salary}
-                    onChange={handleInputChange}
-                    className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    required
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Profile Image
-                  </label>
-                  <input
-                    type="file"
-                    name="image"
-                    onChange={handleInputChange}
-                    accept="image/*"
-                    className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  />
-                </div>
-
-                <div className="flex justify-end gap-2 mt-6">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setIsModalOpen(false);
-                      resetForm();
-                    }}
-                    className="px-4 py-2 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                  >
-                    {selectedStaff ? 'Update' : 'Add'} Staff
-                  </button>
-                </div>
-              </form>
-            </div>
+            )}
           </div>
-        </div>
-      )}
+        )}
+      </div>
+
+      {/* Staff Form Modal */}
+      <StaffFormModal 
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        staffToEdit={currentStaff}
+        onSuccess={handleFormSuccess}
+      />
     </div>
   );
 };

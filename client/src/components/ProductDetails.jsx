@@ -1,14 +1,18 @@
-
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { 
   Star, ShoppingCart, Package, IndianRupee, Box, Calendar, 
   Milk, Send, MessageSquare, User, AlertCircle, Loader2,
-  ChevronDown, ChevronUp
+  ChevronDown, ChevronUp, ArrowLeft, Award, ThumbsUp
 } from "lucide-react";
 import Header from "./Header";
-import BackButton from "./BackButton";
 
+// Add this function to handle image URLs properly
+const getImageUrl = (imageUrl) => {
+  if (!imageUrl) return '/placeholder-image.jpg';
+  if (imageUrl.startsWith('http')) return imageUrl;
+  return `http://localhost:3000${imageUrl}`;
+};
 
 const ProductDetails = () => {
   const { id } = useParams();
@@ -68,6 +72,10 @@ const ProductDetails = () => {
     }
   };
 
+  const goBack = () => {
+    navigate(-1);
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen w-full flex flex-col items-center justify-center gap-4 bg-blue-50">
@@ -94,17 +102,29 @@ const ProductDetails = () => {
   );
 
   return (
-    
-    <div className="min-h-screen w-full bg-gradient-to-w from-green-100 to-green-200 py-8">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 py-8">
       <Header/>
-      <BackButton/>
-      <div className="container mx-auto p-14 space-y-10">
-        {/* Product Image */}
+      
+      <div className="container mt-10 mx-auto p-4 md:p-14 space-y-6">
+        {/* Back Button */}
+        <button 
+          onClick={goBack} 
+          className="flex items-center gap-2 text-blue-600 hover:text-blue-800 transition-colors"
+        >
+          <ArrowLeft className="w-5 h-5" />
+          <span>Back to Products</span>
+        </button>
+
+        {/* Product Image - Updated with error handling */}
         <div className="w-full max-w-2xl mx-auto">
           <img 
-            src={product.image_url}
+            src={getImageUrl(product.image_url)}
             alt={product.name}
             className="w-full h-96 object-cover rounded-lg shadow-md"
+            onError={(e) => {
+              e.target.src = '/placeholder-image.jpg';
+              e.target.onerror = null;
+            }}
           />
         </div>
 
@@ -147,6 +167,35 @@ const ProductDetails = () => {
                 </div>
               </div>
             )}
+          </div>
+
+          {/* Product Quality Section - New Section with fixed width */}
+          <div className="w-full max-w-2xl mx-auto bg-gradient-to-r from-blue-400 to-green-400 p-6 rounded-lg shadow-lg text-white">
+            <div className="flex items-center gap-3 mb-4">
+              <Award className="w-8 h-8" />
+              <h2 className="text-2xl font-bold">Our Quality Promise</h2>
+            </div>
+            <p className="mb-4">
+              Every {product.name} is carefully selected and vetted for the highest quality standards. 
+              We pride ourselves on delivering only the best products to your doorstep.
+            </p>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+              <div className="flex flex-col items-center p-3 bg-white bg-opacity-20 rounded-lg">
+                <ThumbsUp className="w-6 h-6 mb-2" />
+                <h3 className="font-semibold">Premium Selection</h3>
+                <p className="text-center text-sm">Handpicked for excellence</p>
+              </div>
+              <div className="flex flex-col items-center p-3 bg-white bg-opacity-20 rounded-lg">
+                <Box className="w-6 h-6 mb-2" />
+                <h3 className="font-semibold">Safe Packaging</h3>
+                <p className="text-center text-sm">Delivered with care</p>
+              </div>
+              <div className="flex flex-col items-center p-3 bg-white bg-opacity-20 rounded-lg">
+                <Star className="w-6 h-6 mb-2" />
+                <h3 className="font-semibold">Satisfaction Guarantee</h3>
+                <p className="text-center text-sm">100% customer happiness</p>
+              </div>
+            </div>
           </div>
 
           {/* Reviews Section */}

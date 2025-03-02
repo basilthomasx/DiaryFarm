@@ -21,7 +21,7 @@ const StaffLogin = () => {
       localStorage.setItem('token', response.data.token);
 
       // Redirect to staffpage
-      window.location.href = '/staff-dashboard';
+      window.location.href = '/staff/dashboard';
     } catch (error) {
       alert('Your username or password is incorrect');
     }

@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
+import {  
+ArrowLeft  
+} from 'lucide-react';
 
 const API_URL = 'http://localhost:3000/api';
 
@@ -69,9 +72,19 @@ const OrdersList = () => {
   };
 
   return (
-    <div className="max-w-6xl mx-auto p-4 sm:p-6 lg:p-8">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold text-gray-800">Orders</h1>
+    <div className="p-4 bg-gray-50 min-h-screen">
+      {/* Header */}
+      <button 
+          onClick={() => window.history.back()}
+          className="mb-6 flex items-center text-gray-600 hover:text-gray-900 transition-colors"
+        >
+          <ArrowLeft className="w-5 h-5 mr-2" />
+          Back to Dashboard
+        </button>
+    <div className="mb-8">
+
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <h1 className="text-4xl font-bold text-gray-900 tracking-tight">Orders</h1>
         <div className="flex space-x-2">
           <span className="bg-indigo-100 text-indigo-800 text-xs font-medium px-3 py-1.5 rounded-full">
             Total: {orders.length}
@@ -156,6 +169,7 @@ const OrdersList = () => {
           </table>
         </div>
       </div>
+    </div>
     </div>
   );
 };

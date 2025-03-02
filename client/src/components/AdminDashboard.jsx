@@ -1,7 +1,6 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Users, Package, MilkIcon, PhoneCall, Clock } from 'lucide-react';
+import { Users, Package, PhoneCall, Clock } from 'lucide-react';
 import AdminHeader from './AdminHeader';
 
 const AdminDashboard = () => {
@@ -54,13 +53,15 @@ const AdminDashboard = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="min-h-screen bg-green-50">
       <AdminHeader />
       <div className="p-8">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <h1 className="text-3xl font-bold text-green-800 mb-6">Dairy Farm Dashboard</h1>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           <div 
             onClick={() => navigate('/product-management')}
-            className="bg-white rounded-lg shadow-md p-6 cursor-pointer hover:shadow-lg transition-shadow"
+            className="bg-white rounded-lg shadow-md p-6 cursor-pointer hover:shadow-lg transition-shadow border-l-4 border-blue-500"
           >
             <div className="flex items-center mb-4">
               <Package className="w-8 h-8 text-blue-600 mr-3" />
@@ -73,7 +74,7 @@ const AdminDashboard = () => {
 
           <div 
             onClick={() => navigate('/staffs')}
-            className="bg-white rounded-lg shadow-md p-6 cursor-pointer hover:shadow-lg transition-shadow"
+            className="bg-white rounded-lg shadow-md p-6 cursor-pointer hover:shadow-lg transition-shadow border-l-4 border-green-500"
           >
             <div className="flex items-center mb-4">
               <Users className="w-8 h-8 text-green-600 mr-3" />
@@ -86,33 +87,38 @@ const AdminDashboard = () => {
 
           <div 
             onClick={() => navigate('/orders')}
-            className="bg-white rounded-lg shadow-md p-6 cursor-pointer hover:shadow-lg transition-shadow"
+            className="bg-white rounded-lg shadow-md p-6 cursor-pointer hover:shadow-lg transition-shadow border-l-4 border-purple-500"
           >
             <div className="flex items-center mb-4">
-              <Users className="w-8 h-8 text-green-600 mr-3" />
+              <Users className="w-8 h-8 text-purple-600 mr-3" />
               <h2 className="text-xl font-semibold text-gray-800">Order Details</h2>
             </div>
             <p className="text-gray-600">
-              View and Manage Orders
+              View and manage customer orders and deliveries.
             </p>
           </div>
 
           <div 
             onClick={() => navigate('/admin/milk-quality')}
-            className="bg-white rounded-lg shadow-md p-6 cursor-pointer hover:shadow-lg transition-shadow"
+            className="bg-white rounded-lg shadow-md p-6 cursor-pointer hover:shadow-lg transition-shadow border-l-4 border-yellow-500"
           >
             <div className="flex items-center mb-4">
-              <MilkIcon className="w-8 h-8 text-green-600 mr-3" />
-              <h2 className="text-xl font-semibold text-gray-800">Quality of Milk</h2>
+              <div className="w-8 h-8 text-yellow-600 mr-3 flex items-center justify-center">
+                <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M8 2h8"></path>
+                  <path d="M9 2v2.789a4 4 0 0 1-.672 2.219l-.656.984A4 4 0 0 0 7 10.212V20a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2v-9.789a4 4 0 0 0-.672-2.219l-.656-.984A4 4 0 0 1 15 4.788V2"></path>
+                </svg>
+              </div>
+              <h2 className="text-xl font-semibold text-gray-800">Milk Quality</h2>
             </div>
             <p className="text-gray-600">
-              View and edit quality of milk
+              Track and analyze milk quality metrics and testing results.
             </p>
           </div>
 
           <div 
             onClick={() => setShowRequests(true)}
-            className="bg-white rounded-lg shadow-md p-6 cursor-pointer hover:shadow-lg transition-shadow relative"
+            className="bg-white rounded-lg shadow-md p-6 cursor-pointer hover:shadow-lg transition-shadow relative border-l-4 border-orange-500"
           >
             <div className="flex items-center mb-4">
               <PhoneCall className="w-8 h-8 text-orange-600 mr-3" />
@@ -128,6 +134,8 @@ const AdminDashboard = () => {
               View and manage customer callback requests
             </p>
           </div>
+          
+        
         </div>
 
         {showRequests && (
@@ -150,7 +158,7 @@ const AdminDashboard = () => {
               ) : (
                 <div className="overflow-x-auto">
                   <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50">
+                    <thead className="bg-green-50">
                       <tr>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Phone</th>
@@ -182,14 +190,14 @@ const AdminDashboard = () => {
                             {request.status === 'pending' ? (
                               <button
                                 onClick={() => handleStatusChange(request.id, 'completed')}
-                                className="text-sm text-green-600 hover:text-green-900"
+                                className="text-sm bg-green-100 text-green-700 px-3 py-1 rounded-full hover:bg-green-200"
                               >
                                 Mark as completed
                               </button>
                             ) : (
                               <button
                                 onClick={() => handleStatusChange(request.id, 'pending')}
-                                className="text-sm text-gray-600 hover:text-gray-900"
+                                className="text-sm bg-gray-100 text-gray-700 px-3 py-1 rounded-full hover:bg-gray-200"
                               >
                                 Reopen
                               </button>

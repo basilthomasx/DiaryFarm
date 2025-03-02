@@ -1,14 +1,15 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-
 const AdminHeader = () => {
   const [showDropdown, setShowDropdown] = useState(false);
   const navigate = useNavigate();
 
   const handleLogout = () => {
     // Add any logout logic here (e.g., clearing tokens, state, etc.)
-    navigate('/'); // Navigate to home page
+    
+    // Navigate back to the previous page instead of home page
+    navigate(-1);
   };
 
   return (
