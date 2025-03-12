@@ -7,7 +7,6 @@ import {
 } from "lucide-react";
 import Header from "./Header";
 
-
 const getImageUrl = (imageUrl) => {
   if (!imageUrl) return '/placeholder-image.jpg';
   if (imageUrl.startsWith('http')) return imageUrl;
@@ -78,7 +77,7 @@ const ProductDetails = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen w-full flex flex-col items-center justify-center gap-4 bg-blue-50">
+      <div className="h-screen w-full flex flex-col items-center justify-center gap-4 bg-blue-50">
         <Loader2 className="w-12 h-12 animate-spin text-blue-500" />
         <p className="text-gray-600">Loading product details...</p>
       </div>
@@ -87,7 +86,7 @@ const ProductDetails = () => {
 
   if (error) {
     return (
-      <div className="min-h-screen w-full flex flex-col items-center justify-center gap-4 text-red-500 bg-blue-50">
+      <div className="h-screen w-full flex flex-col items-center justify-center gap-4 text-red-500 bg-blue-50">
         <AlertCircle className="w-12 h-12" />
         <p>{error}</p>
       </div>
@@ -95,28 +94,30 @@ const ProductDetails = () => {
   }
 
   if (!product) return (
-    <div className="min-h-screen w-full flex flex-col items-center justify-center gap-4 text-gray-500 bg-blue-50">
+    <div className="h-screen w-full flex flex-col items-center justify-center gap-4 text-gray-500 bg-blue-50">
       <Package className="w-12 h-12" />
       <p>Product not found</p>
     </div>
   );
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 py-8">
+    <div className="min-h-screen w-full bg-gradient-to-br from-gray-50 to-gray-100">
       <Header/>
       
-      <div className="container mt-10 mx-auto p-4 md:p-14 space-y-6">
-        {/* Back Button */}
+      <div className="w-full px-4 sm:px-6 lg:px-8 pt-16 pb-8">
+        {/* Back Button - Fixed to be clearly visible */}
         <button 
-          onClick={goBack} 
-          className="flex items-center gap-2 text-blue-600 hover:text-blue-800 transition-colors"
+          onClick={goBack}
+          className="fixed top-20 left-4 z-50 flex items-center gap-2 px-4 py-2 bg-white text-blue-600 hover:text-blue-800 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 border border-gray-200 group"
         >
-          <ArrowLeft className="w-5 h-5" />
-          <span>Back to Products</span>
+          <div className="relative">
+            <ArrowLeft className="w-5 h-5 transition-transform duration-300 group-hover:-translate-x-1" />
+          </div>
+          <span className="font-medium">Back</span>
         </button>
 
-        {/* Product Image - Updated with error handling */}
-        <div className="w-full max-w-2xl mx-auto">
+        {/* Product Image - Centered with max-width */}
+        <div className="w-full max-w-4xl mx-auto mt-8">
           <img 
             src={getImageUrl(product.image_url)}
             alt={product.name}
@@ -129,7 +130,7 @@ const ProductDetails = () => {
         </div>
 
         {/* Checkout Button */}
-        <div className="w-full max-w-2xl mx-auto">
+        <div className="w-full max-w-4xl mx-auto mt-4">
           <button
             onClick={() => navigate(`/checkout/${product.id}`)}
             className="w-full flex items-center justify-center gap-2 bg-blue-500 hover:bg-blue-600 text-white py-4 px-6 rounded-lg transition-colors shadow-md"
@@ -140,7 +141,7 @@ const ProductDetails = () => {
         </div>
 
         {/* Product Details */}
-        <div className="w-full max-w-2xl mx-auto space-y-6">
+        <div className="w-full max-w-4xl mx-auto mt-6 space-y-6">
           <div className="space-y-4 bg-white p-6 rounded-lg shadow-md">
             <h1 className="text-3xl font-bold">{product.name}</h1>
             <p className="text-gray-600">{product.description}</p>
@@ -169,8 +170,8 @@ const ProductDetails = () => {
             )}
           </div>
 
-          {/* Product Quality Section - New Section with fixed width */}
-          <div className="w-full max-w-2xl mx-auto bg-gradient-to-r from-blue-400 to-green-400 p-6 rounded-lg shadow-lg text-white">
+          {/* Product Quality Section */}
+          <div className="w-full bg-gradient-to-r from-blue-400 to-green-400 p-6 rounded-lg shadow-lg text-white">
             <div className="flex items-center gap-3 mb-4">
               <Award className="w-8 h-8" />
               <h2 className="text-2xl font-bold">Our Quality Promise</h2>

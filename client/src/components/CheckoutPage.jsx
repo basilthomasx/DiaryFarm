@@ -295,6 +295,9 @@ const CheckoutPage = () => {
       </div>
     );
   }
+  const goBack = () => {
+    navigate(-1);
+  };
 
   if (error) {
     return (
@@ -321,22 +324,25 @@ const CheckoutPage = () => {
         <div className="md:col-span-5">
           <div className="flex items-center gap-4 mb-6">
             <button 
-              onClick={() => navigate(-1)} 
-              className="flex items-center gap-2 text-blue-600 hover:text-blue-800 transition-colors"
-            >
-              <ArrowLeft className="w-5 h-5" />
-              <span>Back to product details</span>
-            </button>
+                      onClick={goBack}
+                      className="fixed top-20 left-4 z-50 flex items-center gap-2 px-4 py-2 bg-white text-blue-600 hover:text-blue-800 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 border border-gray-200 group"
+                    >
+                      <div className="relative">
+                        <ArrowLeft className="w-5 h-5 transition-transform duration-300 group-hover:-translate-x-1" />
+                      </div>
+                      <span className="font-medium">Back</span>
+                    </button>
+            
           </div>
           
-          <h1 className="text-3xl font-bold text-gray-800 mb-8 flex items-center gap-3">
-            <ShoppingBag className="w-8 h-8 text-blue-500" />
+          <h1 className="text-3xl font-bold text-gray-800 mb-10 flex items-center gap-3">
+            <ShoppingBag className="mt-4 w-8 h-8 text-blue-500" />
             Checkout
           </h1>
         </div>
         {/* Main Form Section */}
         <div className="md:col-span-2 bg-white rounded-xl shadow-md p-8">
-          <h2 className="text-xl font-semibold mb-6 text-gray-800">Customer Information</h2>
+          <h2 className="text-xl font-semibold mb-8 text-gray-800">Customer Information</h2>
           
           {/* Customer Details Form */}
           <div className="space-y-5">
