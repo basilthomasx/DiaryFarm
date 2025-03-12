@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { User, Edit, Trash2, Plus, Search, X, Upload, Mail, Phone, Tag, Calendar, DollarSign, Save, Loader2, ArrowLeft } from 'lucide-react';
+import { User, Edit, Trash2, Plus, Search, X, Upload, Mail, Phone, Tag, Calendar,  Save, Loader2, ArrowLeft, IndianRupee } from 'lucide-react';
 
 // Helper function for image URL handling
 const getImageUrl = (imageUrl) => {
@@ -258,12 +258,9 @@ const StaffFormModal = ({ isOpen, onClose, staffToEdit, onSuccess }) => {
                 className="w-full pl-10 p-2 border rounded-md"
                 required
               >
-                <option value="">Select Role</option>
-                <option value="Manager">Manager</option>
-                <option value="Sales Associate">Sales Associate</option>
+                
                 <option value="Delivery Staff">Delivery Staff</option>
-                <option value="Customer Support">Customer Support</option>
-                <option value="Admin">Admin</option>
+                
               </select>
             </div>
           </div>
@@ -287,7 +284,7 @@ const StaffFormModal = ({ isOpen, onClose, staffToEdit, onSuccess }) => {
             <div>
               <label className="block text-sm font-medium mb-1">Salary *</label>
               <div className="relative">
-                <DollarSign className="w-5 h-5 absolute left-3 top-3 text-gray-400" />
+                <IndianRupee className="w-5 h-5 absolute left-3 top-3 text-gray-400" />
                 <input
                   type="number"
                   name="salary"
