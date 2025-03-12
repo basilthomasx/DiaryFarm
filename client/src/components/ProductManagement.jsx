@@ -8,7 +8,10 @@ import {
   X, 
   Search, 
   ArrowLeft, 
-  AlertTriangle 
+  AlertTriangle,
+  CheckCircle,
+  XCircle,
+  Info
 } from 'lucide-react';
 
 const getImageUrl = (imageUrl) => {
@@ -24,8 +27,7 @@ const ProductManagement = () => {
   const [imagePreview, setImagePreview] = useState(null);
   const [uploadedImage, setUploadedImage] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
-  const [showAlert, setShowAlert] = useState(false);
-  const [alertMessage, setAlertMessage] = useState('');
+  const [alerts, setAlerts] = useState([]);
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -50,10 +52,17 @@ const ProductManagement = () => {
     }
   };
 
-  const showAlertMessage = (message) => {
-    setAlertMessage(message);
-    setShowAlert(true);
-    setTimeout(() => setShowAlert(false), 3000);
+  const showAlertMessage = (message, type = 'success') => {
+    const id = Date.now();
+    setAlerts(prev => [...prev, { id, message, type }]);
+    
+    setTimeout(() => {
+      setAlerts(prev => prev.filter(alert => alert.id !== id));
+    }, 5000);
+  };
+
+  const removeAlert = (id) => {
+    setAlerts(prev => prev.filter(alert => alert.id !== id));
   };
 
   const fetchProducts = async () => {
@@ -62,7 +71,7 @@ const ProductManagement = () => {
       const data = await response.json();
       setProducts(data);
     } catch (error) {
-      showAlertMessage('Error fetching products');
+      showAlertMessage('Error fetching products', 'error');
       console.error('Error fetching products:', error);
     }
   };
@@ -98,13 +107,13 @@ const ProductManagement = () => {
       });
 
       if (response.ok) {
-        showAlertMessage(selectedProduct ? 'Product updated successfully' : 'Product added successfully');
+        showAlertMessage(selectedProduct ? 'Product updated successfully' : 'Product added successfully', 'success');
         fetchProducts();
         setIsModalOpen(false);
         resetForm();
       }
     } catch (error) {
-      showAlertMessage('Error saving product');
+      showAlertMessage('Error saving product', 'error');
       console.error('Error saving product:', error);
     }
   };
@@ -133,11 +142,11 @@ const ProductManagement = () => {
         });
 
         if (response.ok) {
-          showAlertMessage('Product deleted successfully');
+          showAlertMessage('Product deleted successfully', 'success');
           fetchProducts();
         }
       } catch (error) {
-        showAlertMessage('Error deleting product');
+        showAlertMessage('Error deleting product', 'error');
         console.error('Error deleting product:', error);
       }
     }
@@ -164,36 +173,84 @@ const ProductManagement = () => {
     product.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 py-8">
-      {/* Alert Box */}
-      {showAlert && (
-        <div className="fixed top-4 right-4 z-50 flex items-center bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded shadow-lg">
-          <AlertTriangle className="w-5 h-5 mr-2" />
-          <span className="mr-2">{alertMessage}</span>
+  const Alert = ({ alert, onClose }) => {
+    const alertStyles = {
+      success: {
+        bgColor: 'bg-green-50',
+        borderColor: 'border-green-500',
+        textColor: 'text-green-800',
+        icon: <CheckCircle className="h-5 w-5 text-green-500" />
+      },
+      error: {
+        bgColor: 'bg-red-50',
+        borderColor: 'border-red-500',
+        textColor: 'text-red-800',
+        icon: <XCircle className="h-5 w-5 text-red-500" />
+      },
+      warning: {
+        bgColor: 'bg-yellow-50',
+        borderColor: 'border-yellow-500',
+        textColor: 'text-yellow-800',
+        icon: <AlertTriangle className="h-5 w-5 text-yellow-500" />
+      },
+      info: {
+        bgColor: 'bg-blue-50',
+        borderColor: 'border-blue-500',
+        textColor: 'text-blue-800',
+        icon: <Info className="h-5 w-5 text-blue-500" />
+      }
+    };
+
+    const style = alertStyles[alert.type] || alertStyles.success;
+
+    return (
+      <div className="animate-fadeInRight transform transition-all duration-300 ease-in-out mb-2">
+        <div className={`${style.bgColor} border-l-4 ${style.borderColor} p-4 rounded-md shadow-lg flex items-start`}>
+          <div className="flex-shrink-0 mr-3">
+            {style.icon}
+          </div>
+          <div className="flex-1">
+            <p className={`${style.textColor} font-medium`}>{alert.message}</p>
+          </div>
           <button 
-            onClick={() => setShowAlert(false)}
-            className="text-red-700 hover:text-red-900 transition-colors"
+            onClick={() => onClose(alert.id)} 
+            className="ml-4 text-gray-400 hover:text-gray-600 transition-colors duration-150 focus:outline-none"
+            aria-label="Close alert"
           >
-            <X className="w-4 h-4" />
+            <X className="h-4 w-4" />
           </button>
         </div>
-      )}
+      </div>
+    );
+  };
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 py-8">
+      {/* Alerts Container */}
+      <div className="fixed top-4 right-4 z-50 max-w-md space-y-2">
+        {alerts.map(alert => (
+          <Alert 
+            key={alert.id} 
+            alert={alert} 
+            onClose={removeAlert}
+          />
+        ))}
+      </div>
 
       <div className="max-w-10xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Enhanced Back Button */}
+        {/*Back Button */}
         <button 
           onClick={() => window.history.back()}
-          className="mb-6 flex items-center gap-2 px-4 py-2 bg-white text-blue-600 hover:text-blue-800 rounded-lg shadow-sm hover:shadow transition-all duration-300 border border-gray-200 group"
+          className="fixed top-4 left-4 z-40 flex items-center gap-2 px-4 py-2 bg-white text-blue-600 hover:text-blue-800 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 border border-gray-200 group"
         >
           <div className="relative">
             <ArrowLeft className="w-5 h-5 transition-transform duration-300 group-hover:-translate-x-1" />
           </div>
-          <span className="font-medium">Back to Dashboard</span>
+          <span className="font-medium">Back</span>
         </button>
 
         {/* Header Section */}
-        <div className="mb-8">
+        <div className="mb-8 mt-16 md:mt-8">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <h1 className="text-4xl font-bold text-gray-900 tracking-tight">Product Management</h1>
             <button
@@ -224,77 +281,85 @@ const ProductManagement = () => {
 
         {/* Products Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredProducts.map((product) => (
-            <div key={product.id} className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow">
-              {/* Product Image */}
-              <div className="h-48 overflow-hidden">
-                <img
-                  src={getImageUrl(product.image_url)}
-                  alt={product.name}
-                  className="w-full h-full object-cover"
-                  onError={(e) => {
-                    e.target.src = '/placeholder-image.jpg';
-                  }}
-                />
-              </div>
-              
-              <div className="p-6">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center gap-2">
-                    {product.is_milk_product && <Milk className="text-blue-500" />}
-                    <h3 className="text-lg font-semibold text-gray-900">{product.name}</h3>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <button
-                      onClick={() => handleEdit(product)}
-                      className="p-2 text-gray-600 hover:text-blue-600 rounded-lg hover:bg-blue-50"
-                    >
-                      <Edit className="w-4 h-4" />
-                    </button>
-                    <button
-                      onClick={() => handleDelete(product.id)}
-                      className="p-2 text-gray-600 hover:text-red-600 rounded-lg hover:bg-red-50"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  </div>
+          {filteredProducts.length > 0 ? (
+            filteredProducts.map((product) => (
+              <div key={product.id} className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow">
+                {/* Product Image */}
+                <div className="h-48 overflow-hidden">
+                  <img
+                    src={getImageUrl(product.image_url)}
+                    alt={product.name}
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      e.target.src = '/placeholder-image.jpg';
+                    }}
+                  />
                 </div>
                 
-                <div className="space-y-2">
-                  <div className="flex justify-between items-center text-sm">
-                    <span className="text-gray-600">Stock</span>
-                    <span className="font-medium">{product.stock_quantity} units</span>
-                  </div>
-                  <div className="flex justify-between items-center text-sm">
-                    <span className="text-gray-600">Rate</span>
-                    <span className="font-medium">₹{product.rate}</span>
-                  </div>
-                  <div className="flex justify-between items-center text-sm">
-                    <span className="text-gray-600">Quantity</span>
-                    <span className="font-medium">{product.quantity} {product.unit}</span>
-                  </div>
-                  {product.is_milk_product && (
-                    <div className="flex justify-between items-center text-sm">
-                      <span className="text-gray-600">Subscription Amount</span>
-                      <span className="font-medium">₹{product.subscription_amount}/month</span>
+                <div className="p-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-2">
+                      {product.is_milk_product && <Milk className="text-blue-500" />}
+                      <h3 className="text-lg font-semibold text-gray-900">{product.name}</h3>
                     </div>
-                  )}
-                </div>
-                
-                <div className="mt-4">
-                  {product.is_milk_product ? (
-                    <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
-                      <Milk className="w-4 h-4 mr-1" /> Milk Product
-                    </span>
-                  ) : (
-                    <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-800">
-                      Regular Product
-                    </span>
-                  )}
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => handleEdit(product)}
+                        className="p-2 text-gray-600 hover:text-blue-600 rounded-lg hover:bg-blue-50"
+                      >
+                        <Edit className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={() => handleDelete(product.id)}
+                        className="p-2 text-gray-600 hover:text-red-600 rounded-lg hover:bg-red-50"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <div className="flex justify-between items-center text-sm">
+                      <span className="text-gray-600">Stock</span>
+                      <span className="font-medium">{product.stock_quantity} units</span>
+                    </div>
+                    <div className="flex justify-between items-center text-sm">
+                      <span className="text-gray-600">Rate</span>
+                      <span className="font-medium">₹{product.rate}</span>
+                    </div>
+                    <div className="flex justify-between items-center text-sm">
+                      <span className="text-gray-600">Quantity</span>
+                      <span className="font-medium">{product.quantity} {product.unit}</span>
+                    </div>
+                    {product.is_milk_product && (
+                      <div className="flex justify-between items-center text-sm">
+                        <span className="text-gray-600">Subscription Amount</span>
+                        <span className="font-medium">₹{product.subscription_amount}/month</span>
+                      </div>
+                    )}
+                  </div>
+                  
+                  <div className="mt-4">
+                    {product.is_milk_product ? (
+                      <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
+                        <Milk className="w-4 h-4 mr-1" /> Milk Product
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-800">
+                        Regular Product
+                      </span>
+                    )}
+                  </div>
                 </div>
               </div>
+            ))
+          ) : (
+            <div className="col-span-full flex flex-col items-center justify-center py-12 text-center">
+              <AlertTriangle className="w-12 h-12 text-gray-400 mb-4" />
+              <h3 className="text-lg font-medium text-gray-900 mb-1">No products found</h3>
+              <p className="text-gray-500">Try adjusting your search or add a new product</p>
             </div>
-          ))}
+          )}
         </div>
 
         {/* Add/Edit Modal */}
@@ -364,7 +429,7 @@ const ProductManagement = () => {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1  md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
                     <label className="block text-sm ml-2 font-medium text-gray-700">Name</label>
                     <input
@@ -373,131 +438,132 @@ const ProductManagement = () => {
                       onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                       className="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       required
-                    /></div>
+                    />
+                  </div>
 
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700">Quantity</label>
-                      <div className="mt-1 flex rounded-lg shadow-sm">
-                        <input
-                          type="number"
-                          value={formData.quantity}
-                          onChange={(e) => setFormData({ ...formData, quantity: parseInt(e.target.value) })}
-                          className="block w-full rounded-l-lg border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                          required
-                        />
-                        <select
-                          value={formData.unit}
-                          onChange={(e) => setFormData({ ...formData, unit: e.target.value })}
-                          className="rounded-r-lg border-gray-300 bg-gray-50 px-3 text-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        >
-                          <option value="ml">Mili Liter</option>
-                          <option value="l">Liter</option>
-                        </select>
-                      </div>
-                    </div>
-  
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700">Stock Quantity</label>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Quantity</label>
+                    <div className="mt-1 flex rounded-lg shadow-sm">
                       <input
                         type="number"
-                        value={formData.stock_quantity}
-                        onChange={(e) => setFormData({ ...formData, stock_quantity: parseInt(e.target.value) })}
-                        className="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        value={formData.quantity}
+                        onChange={(e) => setFormData({ ...formData, quantity: parseInt(e.target.value) })}
+                        className="block w-full rounded-l-lg border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         required
                       />
+                      <select
+                        value={formData.unit}
+                        onChange={(e) => setFormData({ ...formData, unit: e.target.value })}
+                        className="rounded-r-lg border-gray-300 bg-gray-50 px-3 text-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      >
+                        <option value="ml">Mili Liter</option>
+                        <option value="l">Liter</option>
+                      </select>
                     </div>
-  
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700">Rate</label>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Stock Quantity</label>
+                    <input
+                      type="number"
+                      value={formData.stock_quantity}
+                      onChange={(e) => setFormData({ ...formData, stock_quantity: parseInt(e.target.value) })}
+                      className="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Rate</label>
+                    <input
+                      type="number"
+                      value={formData.rate}
+                      onChange={(e) => setFormData({ ...formData, rate: parseFloat(e.target.value) })}
+                      className="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      step="0.01"
+                      required
+                    />
+                  </div>
+
+                  <div className="col-span-full">
+                    <label className="block text-sm font-medium text-gray-700">Description</label>
+                    <textarea
+                      value={formData.description}
+                      onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                      className="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      rows="3"
+                    />
+                  </div>
+
+                  <div className="col-span-full">
+                    <div className="flex items-center space-x-2">
+                      <input
+                        type="checkbox"
+                        id="is_milk_product"
+                        checked={formData.is_milk_product}
+                        onChange={(e) => setFormData({ 
+                          ...formData, 
+                          is_milk_product: e.target.checked,
+                          subscription_amount: e.target.checked ? formData.subscription_amount : 0
+                        })}
+                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                      />
+                      <label htmlFor="is_milk_product" className="text-sm text-gray-700 flex items-center">
+                        <Milk className="w-4 h-4 mr-2 text-blue-500" />
+                        This is a milk product
+                      </label>
+                    </div>
+                  </div>
+
+                  {formData.is_milk_product && (
+                    <div className="col-span-full">
+                      <label className="block text-sm font-medium text-gray-700">
+                        Subscription Amount (per month)
+                      </label>
                       <input
                         type="number"
-                        value={formData.rate}
-                        onChange={(e) => setFormData({ ...formData, rate: parseFloat(e.target.value) })}
+                        value={formData.subscription_amount}
+                        onChange={(e) => setFormData({ ...formData, subscription_amount: parseFloat(e.target.value) })}
                         className="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         step="0.01"
-                        required
+                        required={formData.is_milk_product}
                       />
                     </div>
-  
-                    <div className="col-span-full">
-                      <label className="block text-sm font-medium text-gray-700">Description</label>
-                      <textarea
-                        value={formData.description}
-                        onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                        className="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        rows="3"
-                      />
-                    </div>
-  
-                    <div className="col-span-full">
-                      <div className="flex items-center space-x-2">
-                        <input
-                          type="checkbox"
-                          id="is_milk_product"
-                          checked={formData.is_milk_product}
-                          onChange={(e) => setFormData({ 
-                            ...formData, 
-                            is_milk_product: e.target.checked,
-                            subscription_amount: e.target.checked ? formData.subscription_amount : 0
-                          })}
-                          className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                        />
-                        <label htmlFor="is_milk_product" className="text-sm text-gray-700 flex items-center">
-                          <Milk className="w-4 h-4 mr-2 text-blue-500" />
-                          This is a milk product
-                        </label>
-                      </div>
-                    </div>
-  
-                    {formData.is_milk_product && (
-                      <div className="col-span-full">
-                        <label className="block text-sm font-medium text-gray-700">
-                          Subscription Amount (per month)
-                        </label>
-                        <input
-                          type="number"
-                          value={formData.subscription_amount}
-                          onChange={(e) => setFormData({ ...formData, subscription_amount: parseFloat(e.target.value) })}
-                          className="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                          step="0.01"
-                          required={formData.is_milk_product}
-                        />
-                      </div>
+                  )}
+                </div>
+
+                <div className="flex justify-end gap-4 mt-8">
+                  <button
+                    type="button"
+                    onClick={() => setIsModalOpen(false)}
+                    className="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
+                  >
+                    {selectedProduct ? (
+                      <>
+                        <Edit className="w-4 h-4" />
+                        Update Product
+                      </>
+                    ) : (
+                      <>
+                        <Plus className="w-4 h-4" />
+                        Add Product
+                      </>
                     )}
-                  </div>
-  
-                  <div className="flex justify-end gap-4 mt-8">
-                    <button
-                      type="button"
-                      onClick={() => setIsModalOpen(false)}
-                      className="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      type="submit"
-                      className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
-                    >
-                      {selectedProduct ? (
-                        <>
-                          <Edit className="w-4 h-4" />
-                          Update Product
-                        </>
-                      ) : (
-                        <>
-                          <Plus className="w-4 h-4" />
-                          Add Product
-                        </>
-                      )}
-                    </button>
-                  </div>
-                </form>
-              </div>
+                  </button>
+                </div>
+              </form>
             </div>
-          )}
-        </div>
+          </div>
+        )}
       </div>
-    );
-  };
-  
-  export default ProductManagement;
+    </div>
+  );
+};
+
+export default ProductManagement;

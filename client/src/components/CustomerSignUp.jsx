@@ -21,27 +21,27 @@ const CustomerSignUp = () => {
   const validateForm = () => {
     const newErrors = {};
     
-    // Full Name validation - no numbers allowed
+   
     if (/\d/.test(formData.full_name)) {
       newErrors.full_name = 'Full name cannot contain numbers';
     }
     
-    // Email validation - must contain @ symbol
+    
     if (!formData.email.includes('@')) {
       newErrors.email = 'Email must contain @ symbol';
     }
     
-    // Phone validation - must be exactly 10 digits
+    
     if (!/^\d{10}$/.test(formData.phone)) {
       newErrors.phone = 'Phone number must be exactly 10 digits';
     }
     
-    // Username validation - no numbers allowed
+    
     if (/\d/.test(formData.username)) {
       newErrors.username = 'Username cannot contain numbers';
     }
     
-    // Password validation - adding criteria
+
     if (formData.password.length < 8) {
       newErrors.password = 'Password must be at least 8 characters long';
     } else if (!/[A-Z]/.test(formData.password)) {
@@ -54,7 +54,7 @@ const CustomerSignUp = () => {
       newErrors.password = 'Password must contain at least one special character';
     }
     
-    // Confirm password validation
+  
     if (formData.password !== formData.confirmPassword) {
       newErrors.confirmPassword = 'Passwords do not match';
     }
@@ -70,7 +70,7 @@ const CustomerSignUp = () => {
       [name]: value
     }));
     
-    // Clear error when field is being edited
+   
     if (errors[name]) {
       setErrors(prevErrors => ({
         ...prevErrors,
@@ -83,7 +83,7 @@ const CustomerSignUp = () => {
     e.preventDefault();
     
     if (!validateForm()) {
-      return; // Stop if validation fails
+      return; 
     }
 
     try {

@@ -410,13 +410,15 @@ const StaffManagement = () => {
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 py-8">
       <div className="container mx-auto p-4 md:p-8">
         {/* Back Button */}
-        <button
-          onClick={handleBackNavigation}
-          className="mb-6 inline-flex items-center gap-2 py-2 px-4 text-blue-600 hover:text-blue-800 transition-colors rounded-lg hover:bg-blue-50"
-        >
-          <ArrowLeft className="w-5 h-5" />
-          <span className="font-medium">Back to Dashboard</span>
-        </button>
+       <button 
+                 onClick={() => window.history.back()}
+                 className="fixed top-4 left-4 z-40 flex items-center gap-2 px-4 py-2 bg-white text-blue-600 hover:text-blue-800 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 border border-gray-200 group"
+               >
+                 <div className="relative">
+                   <ArrowLeft className="w-5 h-5 transition-transform duration-300 group-hover:-translate-x-1" />
+                 </div>
+                 <span className="font-medium">Back</span>
+               </button>
       
         {/* Header & Controls */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">

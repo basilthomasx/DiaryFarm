@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-const AdminHeader = () => {
+const Navbar = () => {
   const [showDropdown, setShowDropdown] = useState(false);
   const navigate = useNavigate();
 
@@ -14,14 +14,14 @@ const AdminHeader = () => {
   return (
     <header className="bg-white border-b border-gray-200 px-6 py-4">
       <div className="container mx-auto flex justify-between items-center">
-        <h1 className="text-2xl font-bold text-gray-800">Admin Dashboard</h1>
+        <h1 className="text-2xl font-bold text-gray-800">Staff Dashboard</h1>
         
         <div className="relative">
           <button 
             onClick={() => setShowDropdown(!showDropdown)}
             className="w-10 h-10 rounded-full bg-green-600 text-white flex items-center justify-center font-semibold hover:bg-green-700 transition-colors"
           >
-            A
+            S
           </button>
 
           {showDropdown && (
@@ -47,4 +47,4 @@ const AdminHeader = () => {
   );
 };
 
-export default AdminHeader;
+export default Navbar;

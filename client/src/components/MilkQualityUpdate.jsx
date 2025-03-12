@@ -25,7 +25,7 @@ const MilkQualityUpdate = () => {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
   
-  // Input field constraints based on database schema
+  
   const constraints = {
     fat: { min: 0, max: 99.99, step: 0.01 },
     protein: { min: 0, max: 99.99, step: 0.01 },
@@ -35,7 +35,7 @@ const MilkQualityUpdate = () => {
     ph: { min: 0, max: 14.00, step: 0.01 }
   };
 
-  // Fetch both today's data for display and the selected date's data for editing
+  
   useEffect(() => {
     fetchSelectedDateRecord();
     fetchTodayRecord();
@@ -63,7 +63,7 @@ const MilkQualityUpdate = () => {
       if (response.data) {
         setMilkQuality(response.data);
       } else {
-        // Reset form if no record found
+    
         setMilkQuality({
           fat: '',
           protein: '',
@@ -86,12 +86,11 @@ const MilkQualityUpdate = () => {
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     
-    // Input validation based on constraints
+    
     if (name in constraints) {
       const numValue = parseFloat(value);
       const { min, max } = constraints[name];
       
-      // Allow empty string for clearing fields
       if (value === '') {
         setMilkQuality({
           ...milkQuality,
@@ -100,9 +99,9 @@ const MilkQualityUpdate = () => {
         return;
       }
       
-      // Check if value is within allowed range
+      
       if (isNaN(numValue) || numValue < min || numValue > max) {
-        // Don't update state if invalid
+       
         return;
       }
     }
@@ -129,7 +128,7 @@ const MilkQualityUpdate = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    // Validate all fields before submission
+   
     if (!validateBeforeSubmit()) {
       setTimeout(() => setMessage(''), 3000);
       return;
@@ -140,7 +139,7 @@ const MilkQualityUpdate = () => {
       const response = await axios.put(`http://localhost:3000/api/milk-quality/${date}`, milkQuality);
       setMessage('Milk quality data updated successfully!');
       
-      // If we're updating today's data, refresh the today display
+      
       const today = new Date().toISOString().split('T')[0];
       if (date === today) {
         fetchTodayRecord();
@@ -156,22 +155,21 @@ const MilkQualityUpdate = () => {
     }
   };
   
-  // Format date for display
+  
   const formatDate = (dateString) => {
     const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
     return new Date(dateString).toLocaleDateString(undefined, options);
   };
 
-  // Get quality indicator color based on parameter and value
   const getQualityColor = (param, value) => {
-    // These thresholds are examples and can be adjusted based on dairy standards
+    
     const thresholds = {
       fat: { low: 3.0, high: 4.5 },
       protein: { low: 3.0, high: 3.5 },
       lactose: { low: 4.5, high: 5.0 },
       snf: { low: 8.5, high: 9.0 },
-      temperature: { low: 3.0, high: 5.0 }, // for raw milk storage
-      ph: { low: 6.6, high: 6.8 } // normal milk pH
+      temperature: { low: 3.0, high: 5.0 }, 
+      ph: { low: 6.6, high: 6.8 } 
     };
     
     if (!thresholds[param]) return 'bg-gray-100';
@@ -184,7 +182,7 @@ const MilkQualityUpdate = () => {
     return 'bg-green-50';
   };
 
-  // Get icon for each parameter
+ 
   const getParameterIcon = (param) => {
     switch(param) {
       case 'fat':
@@ -207,13 +205,15 @@ const MilkQualityUpdate = () => {
   return (
     <div className="p-4 bg-gray-50 min-h-screen">
       <div className="max-w-6xl mx-auto">
-        <button 
-          onClick={() => window.history.back()}
-          className="mb-6 flex items-center text-gray-600 hover:text-gray-900 transition-colors"
-        >
-          <ArrowLeft className="w-5 h-5 mr-2" />
-          Back to Dashboard
-        </button>
+         <button 
+                         onClick={() => window.history.back()}
+                         className="fixed top-4 left-4 z-40 flex items-center gap-2 px-4 py-2 bg-white text-blue-600 hover:text-blue-800 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 border border-gray-200 group"
+                       >
+                         <div className="relative">
+                           <ArrowLeft className="w-5 h-5 transition-transform duration-300 group-hover:-translate-x-1" />
+                         </div>
+                         <span className="font-medium">Back</span>
+                       </button>
         
         <div className="bg-white rounded-xl shadow-lg overflow-hidden mb-8">
           <div className="p-6 border-b border-gray-100">

@@ -72,20 +72,23 @@ const OrdersList = () => {
   };
 
   return (
-    <div className="p-4 bg-gray-50 min-h-screen">
-      {/* Header */}
+    <div>
+    <div className="p-14 bg-gray-50 min-h-screen">
+      
       <button 
-          onClick={() => window.history.back()}
-          className="mb-6 flex items-center text-gray-600 hover:text-gray-900 transition-colors"
-        >
-          <ArrowLeft className="w-5 h-5 mr-2" />
-          Back to Dashboard
-        </button>
+                onClick={() => window.history.back()}
+                className="fixed top-4 left-4 z-40 flex items-center gap-2 px-4 py-2 bg-white text-blue-600 hover:text-blue-800 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 border border-gray-200 group"
+              >
+                <div className="relative">
+                  <ArrowLeft className="w-5 h-5 transition-transform duration-300 group-hover:-translate-x-1" />
+                </div>
+                <span className="font-medium">Back</span>
+              </button>
     <div className="mb-8">
 
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-            <h1 className="text-4xl font-bold text-gray-900 tracking-tight">Orders</h1>
-        <div className="flex space-x-2">
+    <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+    <h1 className="text-2xl font-bold">Orders</h1>
+    <div className="flex flex-col md:flex-row gap-4 w-full md:w-auto">
           <span className="bg-indigo-100 text-indigo-800 text-xs font-medium px-3 py-1.5 rounded-full">
             Total: {orders.length}
           </span>
@@ -169,6 +172,7 @@ const OrdersList = () => {
           </table>
         </div>
       </div>
+    </div>
     </div>
     </div>
   );

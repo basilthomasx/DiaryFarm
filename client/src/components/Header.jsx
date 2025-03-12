@@ -15,28 +15,27 @@ const Header = () => {
   const dropdownRef = useRef(null);
 
   useEffect(() => {
-    // Check if user is logged in by looking for token in localStorage
+   
     const token = localStorage.getItem('token');
     if (token) {
       setIsLoggedIn(true);
-      // For demonstration, we're using the first letter of "Customer"
-      // In a real app, you would decode the token or fetch user info
+      
       setUserName('C');
     }
   }, []);
 
   useEffect(() => {
-    // Add event listener to close dropdown when clicking outside
+   
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
         setIsDropdownOpen(false);
       }
     };
 
-    // Add the event listener
+   
     document.addEventListener("mousedown", handleClickOutside);
     
-    // Clean up the event listener
+   
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
@@ -47,7 +46,7 @@ const Header = () => {
     setIsLoggedIn(false);
     setIsDropdownOpen(false);
     navigate('/');
-    // Add page reload
+    
     window.location.reload();
   };
 
@@ -56,7 +55,7 @@ const Header = () => {
     setIsMobileMenuOpen(false);
   };
 
-  // Define navLinks based on login status
+  
   const getNavLinks = () => {
     const baseLinks = [
       { href: '/', text: 'Home', icon: <Home className="w-5 h-5" /> },
@@ -102,7 +101,7 @@ const Header = () => {
                 </a>
               ))}
 
-              {/* Dynamic Login/User section */}
+              {/* lk/User section */}
               <div className="relative" ref={dropdownRef}>
                 {isLoggedIn ? (
                   // User icon with first letter after login
@@ -113,7 +112,7 @@ const Header = () => {
                     {userName}
                   </button>
                 ) : (
-                  // Login dropdown before login
+                 
                   <button
                     onClick={() => setIsDropdownOpen(!isDropdownOpen)}
                     className="flex items-center space-x-2 text-green-600 hover:text-blue-600 transition-colors duration-200"
@@ -127,7 +126,7 @@ const Header = () => {
                 {isDropdownOpen && (
                   <div className="absolute right-0 mt-3 w-48 bg-white rounded-lg shadow-xl py-2 border border-gray-100">
                     {isLoggedIn ? (
-                      // After login options
+                      
                       <>
                         <a
                           href="/profile"
@@ -146,7 +145,7 @@ const Header = () => {
                         </button>
                       </>
                     ) : (
-                      // Before login options
+                      
                       ['Customer', 'Staff', 'Admin'].map((userType) => (
                         <a
                           key={userType}

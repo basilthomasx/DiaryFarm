@@ -26,26 +26,26 @@ import {
   Loader
 } from 'lucide-react';
 
-// Date formatting function
+
 const formatDate = (dateString) => {
   const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
   return new Date(dateString).toLocaleDateString('en-US', options);
 };
 
-// Authentication util
+//
 const isAuthenticated = () => {
   return localStorage.getItem('token') !== null;
 };
 
-// Get user data from local storage
+
 const getUserData = () => {
   const userData = localStorage.getItem('userData');
   return userData ? JSON.parse(userData) : null;
 };
 
-// Add the missing getQualityColor function
+
 const getQualityColor = (parameter, value) => {
-  // Define quality ranges for each parameter
+  
   const ranges = {
     fat: { low: 3.0, high: 5.0 },
     protein: { low: 3.0, high: 4.0 },
@@ -55,14 +55,14 @@ const getQualityColor = (parameter, value) => {
     ph: { low: 6.5, high: 6.8 }
   };
 
-  // Default to gray if parameter not found
+  
   if (!ranges[parameter]) {
     return "bg-gray-100";
   }
 
   const { low, high } = ranges[parameter];
   
-  // Temperature has a different logic (we want cool milk)
+  
   if (parameter === 'temperature') {
     if (value <= high && value >= low) {
       return "bg-green-100";
@@ -73,7 +73,7 @@ const getQualityColor = (parameter, value) => {
     }
   }
   
-  // pH has a narrow acceptable range
+  
   if (parameter === 'ph') {
     if (value >= low && value <= high) {
       return "bg-green-100";
@@ -82,20 +82,20 @@ const getQualityColor = (parameter, value) => {
     }
   }
   
-  // For most parameters, higher values are generally better up to a point
+  
   if (value < low) {
     return "bg-red-100";
   } else if (value >= low && value <= high) {
     return "bg-green-100";
   } else {
-    return "bg-yellow-100"; // Values above high range
+    return "bg-yellow-100"; 
   }
 };
 
 const API_BASE_URL = 'http://localhost:3000';
 
 const StageSlider = ({ slides }) => {
-  // StageSlider component remains unchanged
+ 
   const [currentIndex, setCurrentIndex] = React.useState(0);
   const [isAnimating, setIsAnimating] = React.useState(false);
   const [direction, setDirection] = React.useState('right');
@@ -207,18 +207,17 @@ const StageSlider = ({ slides }) => {
 };
 
 function Home() {
-  // Authentication state
+ 
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userData, setUserData] = useState(null);
   
-  // Data state
+ 
   const [todayData, setTodayData] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   
-  const date = new Date().toISOString().split('T')[0]; // Today's date in YYYY-MM-DD format
+  const date = new Date().toISOString().split('T')[0]; 
   
-  // Check authentication on component mount
   useEffect(() => {
     const checkAuth = () => {
       const authenticated = isAuthenticated();
@@ -232,7 +231,7 @@ function Home() {
     
     checkAuth();
     
-    // Listen for storage events (for logout in other tabs)
+   
     window.addEventListener('storage', checkAuth);
     return () => window.removeEventListener('storage', checkAuth);
   }, []);
@@ -246,20 +245,20 @@ function Home() {
       setError(null);
       
       try {
-        // Get the authentication token
+       
         const token = localStorage.getItem('token');
         
-        // Set up the request with the auth token
+       
         const config = {
           headers: {
             'Authorization': `Bearer ${token}`
           }
         };
         
-        // Make the API request
+        
         const response = await axios.get(`${API_BASE_URL}/api/milk-quality/${date}`, config);
         
-        // Update state with fetched data
+        
         setTodayData(response.data);
       } catch (err) {
         console.error('Error fetching milk quality data:', err);

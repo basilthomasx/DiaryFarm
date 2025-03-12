@@ -29,14 +29,14 @@ const HelpAndSupport = () => {
     }
   ];
 
-  // Initialize faq refs
+  // refs
   useEffect(() => {
     faqs.forEach(faq => {
       faqRefs.current[faq.id] = React.createRef();
     });
   }, []);
 
-  // Handle click outside to close help panel
+ 
   useEffect(() => {
     const handleClickOutside = (event) => {
       // Close the help panel if clicked outside
@@ -44,7 +44,7 @@ const HelpAndSupport = () => {
         setIsOpen(false);
       }
 
-      // Close any open FAQ if clicked outside that FAQ
+      // Close any open FAQ 
       if (expandedQuestion !== null) {
         const currentFaqRef = faqRefs.current[expandedQuestion];
         if (currentFaqRef && currentFaqRef.current && !currentFaqRef.current.contains(event.target)) {
@@ -63,7 +63,7 @@ const HelpAndSupport = () => {
   }, [isOpen, expandedQuestion]);
 
   const toggleQuestion = (id, e) => {
-    e.stopPropagation(); // Prevent bubbling to document click handler
+    e.stopPropagation(); 
     if (expandedQuestion === id) {
       setExpandedQuestion(null);
     } else {
@@ -72,7 +72,7 @@ const HelpAndSupport = () => {
   };
 
   const validatePhone = (phoneNumber) => {
-    // Check if phone contains exactly 10 digits
+   
     return /^\d{10}$/.test(phoneNumber);
   };
 
@@ -80,7 +80,7 @@ const HelpAndSupport = () => {
     const { name, value } = e.target;
     setCallbackData({ ...callbackData, [name]: value });
     
-    // Clear error when editing phone field
+    
     if (name === 'phone' && errors.phone) {
       setErrors({...errors, phone: null});
     }
@@ -89,7 +89,7 @@ const HelpAndSupport = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    // Validate phone number
+    
     if (!validatePhone(callbackData.phone)) {
         setErrors({...errors, phone: 'Phone number must be exactly 10 digits'});
         return;
@@ -128,7 +128,7 @@ const HelpAndSupport = () => {
       {/* Help Button */}
       <button
         onClick={(e) => {
-          e.stopPropagation(); // Prevent click from bubbling to document
+          e.stopPropagation(); 
           setIsOpen(!isOpen);
         }}
         className="flex items-center justify-center space-x-2 bg-green-600 text-white px-6 py-3 rounded-full shadow-lg hover:bg-green-700 transition-all duration-300"

@@ -7,7 +7,7 @@ import {
 } from "lucide-react";
 import Header from "./Header";
 
-// Add this function to handle image URLs properly
+
 const getImageUrl = (imageUrl) => {
   if (!imageUrl) return '/placeholder-image.jpg';
   if (imageUrl.startsWith('http')) return imageUrl;

@@ -25,7 +25,7 @@ import {
 import Header from './Header';
 
 
-// Alert Modal Component
+
 const AlertModal = ({ isOpen, onClose, title, message, type = 'success' }) => {
   if (!isOpen) return null;
 
@@ -132,20 +132,19 @@ const CheckoutPage = () => {
     house_number: "",
     quantity: 1,
     delivery_date: "",
-    delivery_time: "morning" // Default to morning
+    delivery_time: "morning"
   });
   const [totalPrice, setTotalPrice] = useState(0);
   const navigate = useNavigate();
   
-  // Alert modal state
+  
   const [alertModal, setAlertModal] = useState({
     isOpen: false,
     title: '',
     message: '',
     type: 'success'
   });
-
-  // Get tomorrow's date as the minimum selectable date
+ 
   const tomorrow = new Date();
   tomorrow.setDate(tomorrow.getDate() + 1);
   const minDate = tomorrow.toISOString().split('T')[0];
@@ -188,7 +187,7 @@ const CheckoutPage = () => {
   const handleChange = (e) => {
     const { name, value } = e.target;
     setCustomer({ ...customer, [name]: value });
-    // Clear error when field is modified
+   
     if (formErrors[name]) {
       setFormErrors({...formErrors, [name]: null});
     }
@@ -211,7 +210,7 @@ const CheckoutPage = () => {
     if (validateForm()) {
       setIsPaymentModalOpen(true);
     } else {
-      // Scroll to first error
+     
       const firstErrorField = Object.keys(formErrors)[0];
       const element = document.getElementsByName(firstErrorField)[0];
       if (element) {
@@ -250,7 +249,7 @@ const CheckoutPage = () => {
   
       if (response.ok) {
         if (paymentMethod === 'cod') {
-          // Show success modal instead of alert
+          
           setAlertModal({
             isOpen: true,
             title: 'Order Successful!',
@@ -258,7 +257,7 @@ const CheckoutPage = () => {
             type: 'success'
           });
         } else {
-          // Show success modal for online payment
+          
           setAlertModal({
             isOpen: true,
             title: 'Order Created!',
@@ -271,7 +270,7 @@ const CheckoutPage = () => {
       }
     } catch (error) {
       console.error('Error creating order:', error);
-      // Show error modal instead of alert
+     
       setAlertModal({
         isOpen: true,
         title: 'Order Failed',
