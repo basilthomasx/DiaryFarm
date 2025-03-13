@@ -15,17 +15,17 @@ const HelpAndSupport = () => {
     {
       id: 1,
       question: "What products do you offer?",
-      answer: "We offer a variety of fresh dairy products including milk, yogurt, cheese, and butter. All our products come directly from local farms."
+      answer: "We offer a variety of fresh dairy products including milk, yogurt, peda, sambaram and butter. All our products come directly from our farms."
     },
     {
       id: 2,
       question: "How do I place an order?",
-      answer: "You can place an order by logging into your account, browsing our products section, and adding items to your cart. Then proceed to checkout to complete your purchase."
+      answer: "You can place an order by signup, logging into your account Then proceed to checkout to complete your purchase."
     },
     {
       id: 3,
       question: "What are your delivery areas?",
-      answer: "We currently deliver to most areas within 50km of our main facility. You can check if we deliver to your area by entering your pincode during checkout."
+      answer: "We currently deliver to most areas within pathiripadam pachayath, of our main facility. You can check if we deliver to your area by entering your pincode during checkout."
     }
   ];
 
@@ -181,7 +181,7 @@ const HelpAndSupport = () => {
                 
                 <button
                   onClick={() => setShowCallbackForm(true)}
-                  className="w-full py-2 bg-green-100 text-green-800 rounded-lg hover:bg-green-200 transition-colors flex items-center justify-center space-x-2"
+                  className="w-full py-4 bg-green-100 text-green-800 rounded-lg hover:bg-green-200 transition-colors flex items-center justify-center space-x-3"
                 >
                   <Phone className="w-4 h-4" />
                   <span>Need more help? Request a callback</span>
@@ -190,7 +190,7 @@ const HelpAndSupport = () => {
             ) : isSubmitted ? (
               <div className="text-center py-6">
                 <div className="mb-4 text-green-600">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="mx-auto h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <svg xmlns="" className="mx-auto h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
                 </div>
