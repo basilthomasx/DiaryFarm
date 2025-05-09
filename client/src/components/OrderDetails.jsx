@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import axios from 'axios';
-import AdminHeader from './AdminHeader';
+import { ArrowLeft } from 'lucide-react';
 
 const API_URL = 'http://localhost:3000/api';
 
@@ -72,7 +72,6 @@ const OrderDetails = () => {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-screen">
-        
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
         <span className="ml-3 text-gray-600">Loading order details...</span>
       </div>
@@ -100,7 +99,17 @@ const OrderDetails = () => {
   const totalAmount = typeof order.total_amount === 'string' ? parseFloat(order.total_amount) : order.total_amount;
 
   return (
-    <div className="max-w-6xl mx-auto p-4 sm:p-6 lg:p-8">
+    <div className="max-w-6xl mx-auto p-4 sm:p-6 lg:p-8 relative">
+      <button 
+        onClick={() => window.history.back()}
+        className="fixed top-4 left-4 z-40 flex items-center gap-2 px-4 py-2 bg-white text-blue-600 hover:text-blue-800 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 border border-gray-200 group"
+      >
+        <div className="relative">
+          <ArrowLeft className="w-5 h-5 transition-transform duration-300 group-hover:-translate-x-1" />
+        </div>
+        <span className="font-medium">Back</span>
+      </button>
+
       <h1 className="text-2xl font-bold text-gray-800 mb-6">Order #{order.id}</h1>
       
       {successMessage && (

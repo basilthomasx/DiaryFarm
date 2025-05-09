@@ -58,7 +58,7 @@ const CustomerLogin = () => {
               <Store className="h-12 w-12 text-white" />
             </div>
             <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-4">
-              Farmer Dashboard
+              Hey There
             </h1>
             <p className="text-green-100 text-lg md:text-xl mb-8">
               Manage your dairy business and connect directly with customers
@@ -89,7 +89,7 @@ const CustomerLogin = () => {
         <div className="lg:w-1/2 flex items-center justify-center p-6 md:p-8 lg:p-12 bg-gray-50">
           <div className="w-full max-w-md space-y-8 bg-white p-6 md:p-8 rounded-2xl shadow-lg">
             <div className="text-center">
-              <h2 className="text-2xl md:text-3xl font-bold text-gray-900">Welcome, Farmer!</h2>
+              <h2 className="text-2xl md:text-3xl font-bold text-gray-900">Welcome, Customer!</h2>
               <p className="mt-2 text-gray-600">Sign in to manage your dairy business</p>
             </div>
 

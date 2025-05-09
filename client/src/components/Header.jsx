@@ -80,14 +80,16 @@ const Header = () => {
       <header className="bg-white shadow-lg fixed top-0 left-0 w-full z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           
-          <div className="flex items-center justify-between h-20">
-            <div className="flex-shrink-0 flex items-center space-x-3">
-              <Milk className="w-8 h-8 text-blue-600" />
-              <div>
-                <h1 className="text-2xl font-bold text-blue-800">God's Own Dairy</h1>
-                <p className="text-lg font-bold text-green-600">പാലിന്റെ മേന്മ, നാടിന്റെ നന്മ...</p>
-              </div>
-            </div>
+        <div className="flex items-center justify-between h-20">
+    <div className="flex-shrink-0 flex items-center space-x-3">
+        <img src="/cow.png" alt="God's Own Dairy Logo" className="w-9 h-9 text-blue-600" />
+        <div>
+            <h1 className="text-2xl font-bold text-blue-800">God's Own Dairy</h1>
+            <p className="text-lg font-bold text-green-600">പാലിന്റെ മേന്മ, നാടിന്റെ നന്മ...</p>
+        </div>
+    </div>
+    
+
 
             <nav className="hidden md:flex items-center space-x-10">
               {navLinks.map((link) => (
@@ -128,14 +130,7 @@ const Header = () => {
                     {isLoggedIn ? (
                       
                       <>
-                        <a
-                          href="/profile"
-                          className="flex items-center space-x-2 px-4 py-2.5 text-gray-700 hover:bg-green-50 hover:text-green-600 transition-colors duration-200"
-                          onClick={closeAll}
-                        >
-                          <UserCircle size={18} />
-                          <span>Profile</span>
-                        </a>
+                        
                         <button
                           onClick={handleLogout}
                           className="flex items-center space-x-2 w-full text-left px-4 py-2.5 text-gray-700 hover:bg-green-50 hover:text-green-600 transition-colors duration-200"

@@ -912,7 +912,8 @@ app.post('/api/orders/create', async (req, res) => {
         to: req.body.customer_email,
         subject: `Order Confirmation ${orderId}`,
         html: `
-          <h1>Thank you for your order,God’s Own Dairy!</h1>
+          <h1>Thank you for your order<br/>
+          God’s Own Dairy.</h1>
           <p>Dear ${req.body.customer_name},</p>
           <p>We're pleased to confirm that your order has been received and is being processed.</p>
           <h2>Order Details:</h2>
